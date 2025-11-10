@@ -1,0 +1,32 @@
+# Virtual environment
+.venv/
+venv/
+env/
+*.env
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Cache (if any)
+.cache/
+
+# Operating System files
+.DS_Store # macOS
+Thumbs.db # Windows
+.project # IDE files (e.g., Eclipse)
+.idea/ # IntelliJ / PyCharm
+*.iml # IntelliJ / PyCharm
+.vscode/ # VS Code specific settings (optional, if you want to share workspace settings)
+
+# Pipenv (if used)
+Pipfile.lock
+
+# Misc
+*.log
+*.tmp
+*.bak
+
+notes.txt
