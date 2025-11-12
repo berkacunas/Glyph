@@ -7,23 +7,13 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QTe
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu
 
 from PyQt6.QtWebEngineWidgets import QWebEngineView 
+
 import markdown
+import pymdownx.emoji
 
 from .SettingsDialog import SettingsDialog
 
 ICONS_DIR = os.path.join(os.path.dirname(__file__), "assets", "icons")
-
-markdown_extensions = [
-    'fenced_code',  # code blocks. ex. ```python ... ```
-    'codehilite',   # adds syntax highlighting (requires pygments package)
-    'admonition',   # !!! note block
-    'tables',       # tables
-    'toc',          # table of contents. use it with [TOC] placeholder
-    'def_list',     # syntax for definition lists
-    'attr_list',    # attribute lists to generated HTML
-    'sane_lists',   # enables list items with multiple paragraphs
-    'footnotes'
-]
 
 class MarkdownEditor(QMainWindow):
 
@@ -31,7 +21,50 @@ class MarkdownEditor(QMainWindow):
 
         super().__init__()
 
-        self.markdown = markdown.Markdown(extensions=markdown_extensions)
+        # build css file's path for QWebEngineView
+        self.project_root_dir = os.path.dirname(__file__)
+        css_file_path = os.path.join(self.project_root_dir, "assets", "css", "main.css")
+        self.css_file_url = QUrl.fromLocalFile(css_file_path).toString()
+
+        markdown_extensions = [
+            'fenced_code',      # code blocks. ex. ```python ... ```
+            'codehilite',       # adds syntax highlighting (requires pygments package)
+            'admonition',       # !!! note block
+            'tables',           # tables
+            'toc',              # table of contents. use it with [TOC] placeholder
+            'def_list',         # syntax for definition lists
+            'attr_list',        # attribute lists to generated HTML
+            'sane_lists',       # enables list items with multiple paragraphs
+            'pymdownx.emoji',   # 
+            'footnotes'
+        ]
+
+        markdown_extension_configs = {
+            'pymdownx.emoji': { 'emoji_index': pymdownx.emoji.gemoji,
+                                'emoji_generator': pymdownx.emoji.to_alt,
+                                "alt": 'html_entity'
+            }
+        }
+        
+
+        # extension_configs = {
+        #     "pymdownx.emoji": {
+        #         "emoji_index": pymdownx.emoji.gemoji,
+        #         "emoji_generator": pymdownx.emoji.to_png,
+        #         "alt": "short",
+        #         "options": {
+        #             "attributes": {
+        #                 "align": "absmiddle",
+        #                 "height": "20px",
+        #                 "width": "20px"
+        #             },
+        #             "image_path": "https://assets-cdn.github.com/images/icons/emoji/unicode/",
+        #             "non_standard_image_path": "https://assets-cdn.github.com/images/icons/emoji/"
+        #         }
+        #     }
+        # }
+
+        self.markdown = markdown.Markdown(extensions=markdown_extensions, extension_configs=markdown_extension_configs)
         self.editor_content_changed = False
         self.current_file_path = None
         self.is_model_set = False
@@ -518,7 +551,7 @@ class MarkdownEditor(QMainWindow):
 
     def exit_app(self):
         
-        if self.editor_content_changed:
+        if self._is_any_tab_changed():
             response = QMessageBox.warning(self,
                 self.tr("Unsaved Changes"),
                 self.tr("There are unsaved changes in the current file. Do you want to save them before creating a new file?"), 
@@ -563,7 +596,8 @@ class MarkdownEditor(QMainWindow):
             md_editor.redo()
 
     def closeEvent(self, event):
-        if self.editor_content_changed:
+
+        if self._is_any_tab_changed():
             response = QMessageBox.warning(self, self.tr("Unsaved Changes"),
                 self.tr("There are unsaved changes. Do you want to save them before exiting?"),
                 QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
@@ -709,8 +743,23 @@ class MarkdownEditor(QMainWindow):
             return
 
         markdown_text = md_editor.toPlainText()
-        html_content = css_style + self.markdown.convert(markdown_text)
+        html_body = self.markdown.convert(markdown_text)
 
+        html_full_document = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <link rel="stylesheet" href="{self.css_file_url}">
+        </head>
+        <body>
+            {html_body}
+        </body>
+        </html>
+        """
+
+        # Markdown dosyasının kendi temel URL'ini al
+        #(Bu, .md dosyasındaki göreceli resimlerin çalışması için kritiktir)
         current_file_path = md_editor.property("file_path")
         
         if current_file_path:
@@ -718,7 +767,7 @@ class MarkdownEditor(QMainWindow):
         else:
             base_url = QUrl.fromLocalFile(QDir.currentPath())
             
-        self.md_viewer.setHtml(html_content, baseUrl=base_url)
+        self.md_viewer.setHtml(html_full_document, baseUrl=base_url)
 
     def _activeTextEdit(self) -> QTextEdit:
         """
@@ -779,149 +828,10 @@ class MarkdownEditor(QMainWindow):
         self.undoAction.setEnabled(enabled)
         self.redoAction.setEnabled(enabled)
 
-css_style = """
-
-<style> body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; line-height: 1.6; padding: 25px; }
-
-/* === Kod ve Tablo Stilleri (Öncekiler) === */
-code { 
-    background-color: #f6f8fa; 
-    padding: 3px 5px; 
-    border-radius: 5px; 
-    font-family: monospace;
-}
-pre { 
-    background-color: #f6f8fa; 
-    padding: 15px; 
-    border-radius: 5px; 
-    overflow-x: auto; 
-}
-table { 
-    border-collapse: collapse; 
-    margin: 15px 0;
-}
-th, td { 
-    border: 1px solid #dfe2e5; 
-    padding: 8px 12px; 
-}
-th { 
-    background-color: #f6f8fa; 
-}
-
-/* === TOC (İçindekiler) Stili === */
-.toc {
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    padding: 10px 20px;
-    margin-bottom: 20px;
-}
-.toc ul {
-    list-style-type: none;
-    padding-left: 10px;
-}
-
-/* === Admonition (Not Kutuları) Stilleri === */
-.admonition {
-    padding: 15px;
-    margin: 15px 0;
-    border-left: 5px solid #ccc;
-    border-radius: 4px;
-    background-color: #f7f7f7;
-}
-.admonition-title {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-.admonition.note { border-color: #428bca; }
-.admonition.warning { border-color: #f0ad4e; }
-.admonition.danger { border-color: #d9534f; }
-
-/* === YENİ: Footnotes (Dipnot) Stilleri === */
-.footnote {
-    border-top: 1px solid #e0e0e0;
-    padding-top: 10px;
-    margin-top: 20px;
-    font-size: 0.9em;
-}
-/* Metin içindeki dipnot referans linki (1, 2, vb.) */
-sup a {
-    color: #0366d6;
-    text-decoration: none;
-}
-
-/* === PYGMENTS KOD RENKLENDİRME STİLLERİ === */
-/* Bu bloğu <style> etiketinizin içine ekleyin */
-
-.codehilite .hll { background-color: #ffffcc }
-.codehilite { background: #f8f8f8; border: 0px solid #ccc; padding: 6px 10px; border-radius: 0px; }
-.codehilite .c { color: #408080; font-style: italic } /* Comment */
-.codehilite .err { border: 1px solid #FF0000 } /* Error */
-.codehilite .k { color: #008000; font-weight: bold } /* Keyword */
-.codehilite .o { color: #666666 } /* Operator */
-.codehilite .ch { color: #408080; font-style: italic } /* Comment.Hashbang */
-.codehilite .cm { color: #408080; font-style: italic } /* Comment.Multiline */
-.codehilite .cp { color: #BC7A00 } /* Comment.Preproc */
-.codehilite .cpf { color: #408080; font-style: italic } /* Comment.PreprocFile */
-.codehilite .c1 { color: #408080; font-style: italic } /* Comment.Single */
-.codehilite .cs { color: #408080; font-style: italic } /* Comment.Special */
-.codehilite .gd { color: #A00000 } /* Generic.Deleted */
-.codehilite .ge { font-style: italic } /* Generic.Emph */
-.codehilite .gr { color: #FF0000 } /* Generic.Error */
-.codehilite .gh { color: #000080; font-weight: bold } /* Generic.Heading */
-.codehilite .gi { color: #00A000 } /* Generic.Inserted */
-.codehilite .go { color: #888888 } /* Generic.Output */
-.codehilite .gp { color: #000080; font-weight: bold } /* Generic.Prompt */
-.codehilite .gs { font-weight: bold } /* Generic.Strong */
-.codehilite .gu { color: #800080; font-weight: bold } /* Generic.Subheading */
-.codehilite .gt { color: #0044DD } /* Generic.Traceback */
-.codehilite .kc { color: #008000; font-weight: bold } /* Keyword.Constant */
-.codehilite .kd { color: #008000; font-weight: bold } /* Keyword.Declaration */
-.codehilite .kn { color: #008000; font-weight: bold } /* Keyword.Namespace */
-.codehilite .kp { color: #008000 } /* Keyword.Pseudo */
-.codehilite .kr { color: #008000; font-weight: bold } /* Keyword.Reserved */
-.codehilite .kt { color: #B00040 } /* Keyword.Type */
-.codehilite .m { color: #666666 } /* Literal.Number */
-.codehilite .s { color: #BA2121 } /* Literal.String */
-.codehilite .na { color: #7D9029 } /* Name.Attribute */
-.codehilite .nb { color: #008000 } /* Name.Builtin */
-.codehilite .nc { color: #0000FF; font-weight: bold } /* Name.Class */
-.codehilite .no { color: #880000 } /* Name.Constant */
-.codehilite .nd { color: #AA22FF } /* Name.Decorator */
-.codehilite .ni { color: #999999; font-weight: bold } /* Name.Entity */
-.codehilite .ne { color: #D2413A; font-weight: bold } /* Name.Exception */
-.codehilite .nf { color: #0000FF } /* Name.Function */
-.codehilite .nl { color: #A0A000 } /* Name.Label */
-.codehilite .nn { color: #0000FF; font-weight: bold } /* Name.Namespace */
-.codehilite .nt { color: #008000; font-weight: bold } /* Name.Tag */
-.codehilite .nv { color: #19177C } /* Name.Variable */
-.codehilite .ow { color: #AA22FF; font-weight: bold } /* Operator.Word */
-.codehilite .w { color: #bbbbbb } /* Text.Whitespace */
-.codehilite .mb { color: #666666 } /* Literal.Number.Bin */
-.codehilite .mf { color: #666666 } /* Literal.Number.Float */
-.codehilite .mh { color: #666666 } /* Literal.Number.Hex */
-.codehilite .mi { color: #666666 } /* Literal.Number.Integer */
-.codehilite .mo { color: #666666 } /* Literal.Number.Oct */
-.codehilite .sa { color: #BA2121 } /* Literal.String.Affix */
-.codehilite .sb { color: #BA2121 } /* Literal.String.Backtick */
-.codehilite .sc { color: #BA2121 } /* Literal.String.Char */
-.codehilite .dl { color: #BA2121 } /* Literal.String.Delimiter */
-.codehilite .sd { color: #BA2121; font-style: italic } /* Literal.String.Doc */
-.codehilite .s2 { color: #BA2121 } /* Literal.String.Double */
-.codehilite .se { color: #BB6622; font-weight: bold } /* Literal.String.Escape */
-.codehilite .sh { color: #BA2121 } /* Literal.String.Heredoc */
-.codehilite .si { color: #BB6688; font-weight: bold } /* Literal.String.Interpol */
-.codehilite .sx { color: #008000 } /* Literal.String.Other */
-.codehilite .sr { color: #BB6688 } /* Literal.String.Regex */
-.codehilite .s1 { color: #BA2121 } /* Literal.String.Single */
-.codehilite .ss { color: #19177C } /* Literal.String.Symbol */
-.codehilite .bp { color: #008000 } /* Name.Builtin.Pseudo */
-.codehilite .fm { color: #0000FF } /* Name.Function.Magic */
-.codehilite .vc { color: #19177C } /* Name.Variable.Class */
-.codehilite .vg { color: #19177C } /* Name.Variable.Global */
-.codehilite .vi { color: #19177C } /* Name.Variable.Instance */
-.codehilite .vm { color: #19177C } /* Name.Variable.Magic */
-.codehilite .il { color: #666666 } /* Literal.Number.Integer.Long */
-
-</style>
-"""
+    def _is_any_tab_changed(self) -> bool:
+        """Helper function to check if any tab has unsaved changes."""
+        for i in range(self.editorTabWidget.count()):
+            editor = self.editorTabWidget.widget(i)
+            if isinstance(editor, QTextEdit) and editor.property("is_changed"):
+                return True
+        return False
