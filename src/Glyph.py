@@ -21,7 +21,6 @@ class MarkdownEditor(QMainWindow):
 
         super().__init__()
 
-        # build css file's path for QWebEngineView
         self.project_root_dir = os.path.dirname(__file__)
         css_file_path = os.path.join(self.project_root_dir, "assets", "css", "main.css")
         self.css_file_url = QUrl.fromLocalFile(css_file_path).toString()
@@ -42,27 +41,16 @@ class MarkdownEditor(QMainWindow):
         markdown_extension_configs = {
             'pymdownx.emoji': { 'emoji_index': pymdownx.emoji.gemoji,
                                 'emoji_generator': pymdownx.emoji.to_alt,
-                                "alt": 'html_entity'
-            }
+                                "alt": 'html_entity',
+                                "options": {
+                                    "attributes": {
+                                        "align": "absmiddle",
+                                        "height": "20px",
+                                        "width": "20px"
+                                    }
+                                }
+                            }
         }
-        
-
-        # extension_configs = {
-        #     "pymdownx.emoji": {
-        #         "emoji_index": pymdownx.emoji.gemoji,
-        #         "emoji_generator": pymdownx.emoji.to_png,
-        #         "alt": "short",
-        #         "options": {
-        #             "attributes": {
-        #                 "align": "absmiddle",
-        #                 "height": "20px",
-        #                 "width": "20px"
-        #             },
-        #             "image_path": "https://assets-cdn.github.com/images/icons/emoji/unicode/",
-        #             "non_standard_image_path": "https://assets-cdn.github.com/images/icons/emoji/"
-        #         }
-        #     }
-        # }
 
         self.markdown = markdown.Markdown(extensions=markdown_extensions, extension_configs=markdown_extension_configs)
         self.editor_content_changed = False
@@ -88,6 +76,8 @@ class MarkdownEditor(QMainWindow):
         # self.mainVLayout.addLayout(self.menuHLayout ,stretch=0)
         self.mainVLayout.addWidget(self.editorWidget, stretch=1)
         self.setCentralWidget(self.mainWidget)
+
+        self.findReplaceDialog = None
 
         self.setupUi()
         self.createIcons()
@@ -199,6 +189,14 @@ class MarkdownEditor(QMainWindow):
         closeFileAction.triggered.connect(self.close_file) 
         self.closeFileAction = closeFileAction
 
+        closeOtherTabsAction = QAction(self.tr("Close Others"), self)
+        closeOtherTabsAction.triggered.connect(self.close_other_tabs)
+        self.closeOtherTabsAction = closeOtherTabsAction
+
+        closeAllTabsAction = QAction(self.tr("Close All"), self)
+        closeAllTabsAction.triggered.connect(self.close_all_tabs)
+        self.closeAllTabsAction = closeAllTabsAction
+
         exitAppAction = QAction(self.exitAppIcon, self.tr("E&xit"), self)
         exitAppAction.setShortcut("Ctrl+W")
         exitAppAction.setStatusTip(self.tr("Exit Application"))
@@ -304,6 +302,9 @@ class MarkdownEditor(QMainWindow):
 
         self.tebWidgetContextMenu = QMenu(self)
         self.tebWidgetContextMenu.addAction(self.closeFileAction)
+        self.tebWidgetContextMenu.addAction(self.closeOtherTabsAction)
+        self.tebWidgetContextMenu.addAction(self.closeAllTabsAction)
+        self.tebWidgetContextMenu.addSeparator()
         self.tebWidgetContextMenu.addAction(QAction("test 2", self))
         self.tebWidgetContextMenu.addAction(QAction("test 3", self))
 
@@ -519,11 +520,11 @@ class MarkdownEditor(QMainWindow):
         else:
             self.statusBar().showMessage(self.tr("File save cancelled."), 2000)
 
-    def close_file(self):
+    def close_file(self) -> bool:
         
         md_editor = self._activeTextEdit()
         if not md_editor:
-            return
+            return True
         
         if md_editor.property("is_changed"):
             response = QMessageBox.warning(self,
@@ -533,13 +534,12 @@ class MarkdownEditor(QMainWindow):
             )
             if response == QMessageBox.StandardButton.Save:
                 if not self.save_file():
-                    return
+                    return False
             elif response == QMessageBox.StandardButton.Cancel:
-                return
+                return False
 
         current_index = self.editorTabWidget.currentIndex()
         self.editorTabWidget.removeTab(current_index)
-        self.md_viewer.setHtml("")
 
         file_path = md_editor.property("file_path")
         if file_path:
@@ -547,7 +547,46 @@ class MarkdownEditor(QMainWindow):
         else:
             self.statusBar().showMessage(self.tr("File closed."), 3000)
 
-        self.setWindowTitle(self.tr("Glyph"))
+        return True
+
+    def close_other_tabs(self):
+
+        try:
+            keep_widget = self.editorTabWidget.widget(self._context_menu_tab_index)
+            if not keep_widget:
+                return # Bir hata oluştu
+        except Exception:
+            return # Geçersiz indeks, bir şey yapma
+        
+
+        while self.editorTabWidget.count() > 1:
+            
+            # 3. Bizim widget'ımızın GÜNCEL indeksini bul
+            keep_index = self.editorTabWidget.indexOf(keep_widget)
+
+            # 4. Kapatılacak hedefi seç (Her zaman 0'ı dene)
+            current_index = 0
+            if current_index == keep_index:
+                # Eğer tutmak istediğimiz sekme zaten 0'daysa,
+                # onun yerine 1. sekmeyi kapatmayı dene.
+                current_index = 1
+                
+            # 5. Kapatılacak hedef sekmeyi aktif hale getir
+            self.editorTabWidget.setCurrentIndex(current_index)
+            
+            # 6. Güçlendirilmiş close_file metodumuzu çağır
+            if not self.close_file():
+                # Kullanıcı 'İptal' dedi, tüm işlemi durdur.
+                return
+            
+    def close_all_tabs(self):
+        """
+        Tüm sekmeleri, her biri için 'close_file' çağırarak kapatır.
+        """
+        while self.editorTabWidget.count() > 0:
+            self.editorTabWidget.setCurrentIndex(0)
+            if not self.close_file():
+                return
 
     def exit_app(self):
         
@@ -661,17 +700,18 @@ class MarkdownEditor(QMainWindow):
         self._open_file_in_new_tab(file_path)
     
     def show_editorTab_context_menu(self, pos: QPoint):
-        """
-        :param pos: Sağ tıklamanın QTabWidget'a göre lokal koordinatlarını 
-                    (x, y) içeren QPoint nesnesi.
-        """
-        
         # 'pos' parametresi, menüyü nerede göstereceğinizi bilmenizi sağlar.
         # Genellikle bu lokal 'pos'u global ekran koordinatlarına çeviririz:
         
-        widget = self.sender() 
-        global_pos = widget.mapToGlobal(pos)
+        widget = self.sender()
+
+        tab_index = widget.tabBar().tabAt(pos)
+        if tab_index == -1:
+            return
         
+        self._context_menu_tab_index = tab_index
+
+        global_pos = widget.mapToGlobal(pos)
         if self.editorTabWidget.count() > 0:
             self.tebWidgetContextMenu.exec(global_pos)
     

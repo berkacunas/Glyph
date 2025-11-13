@@ -24,9 +24,18 @@ Thumbs.db # Windows
 # Pipenv (if used)
 Pipfile.lock
 
+# Node.js
+node_modules/
+
+# Npm logs
+npm-debug.log
+yarn-error.log
+
 # Misc
 *.log
 *.tmp
 *.bak
 
 notes.txt
+*.md
+
