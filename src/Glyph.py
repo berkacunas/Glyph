@@ -139,6 +139,7 @@ class MarkdownEditor(QMainWindow):
         self.openFileIcon = QIcon(os.path.join(ICONS_DIR, "open.ico"))
         self.saveFileIcon = QIcon(os.path.join(ICONS_DIR, "save.ico"))
         self.saveAsFileIcon = QIcon(os.path.join(ICONS_DIR, "saveas.ico"))
+        self.pdfIcon = QIcon(os.path.join(ICONS_DIR, "pdf.ico"))
         self.closeFileIcon = QIcon(os.path.join(ICONS_DIR, "close.ico"))
         self.exitAppIcon = QIcon(os.path.join(ICONS_DIR, "exit.ico"))
         
@@ -184,6 +185,11 @@ class MarkdownEditor(QMainWindow):
         saveAsFileAction.triggered.connect(self.saveas_file) 
         self.saveAsFileAction = saveAsFileAction
 
+        exportPdfAction = QAction(self.pdfIcon, self.tr("Export to PDF..."), self)
+        exportPdfAction.setStatusTip(self.tr("Export content to PDF file"))
+        exportPdfAction.triggered.connect(self.export_to_pdf)
+        self.exportPdfAction = exportPdfAction
+
         closeFileAction = QAction(self.closeFileIcon, self.tr("Close"), self)
         # closeFileAction.setShortcut("Ctrl+W")
         closeFileAction.setStatusTip(self.tr("Close file"))
@@ -198,9 +204,9 @@ class MarkdownEditor(QMainWindow):
         closeAllTabsAction.triggered.connect(self.close_all_tabs)
         self.closeAllTabsAction = closeAllTabsAction
 
-        exitAppAction = QAction(self.exitAppIcon, self.tr("E&xit"), self)
+        exitAppAction = QAction(self.exitAppIcon, self.tr("E&xit Glyph"), self)
         exitAppAction.setShortcut("Ctrl+W")
-        exitAppAction.setStatusTip(self.tr("Exit Application"))
+        exitAppAction.setStatusTip(self.tr("Exit Glyph"))
         exitAppAction.triggered.connect(self.exit_app) 
         self.exitAppAction = exitAppAction
 
@@ -234,7 +240,7 @@ class MarkdownEditor(QMainWindow):
         redoAction.triggered.connect(self.redo_text)
         self.redoAction = redoAction
 
-        findReplaceAction = QAction(self.tr("Find & Replace..."), self)
+        findReplaceAction = QAction(self.tr("Find && Replace..."), self)
         findReplaceAction.setShortcut("Ctrl+F")
         findReplaceAction.triggered.connect(self.show_find_replace_dialog)
         self.findReplaceAction = findReplaceAction
@@ -250,7 +256,7 @@ class MarkdownEditor(QMainWindow):
         settingsAction = QAction(self.settingsIcon, self.tr("&Settings..."), self)
         settingsAction.setShortcut("Ctrl+,")
         settingsAction.setStatusTip(self.tr("Open application settings"))
-        settingsAction.triggered.connect(self.openSettingsDialog)
+        settingsAction.triggered.connect(self.open_settings_dialog)
         self.settingsAction = settingsAction
 
     def createMenuBar(self):
@@ -261,9 +267,13 @@ class MarkdownEditor(QMainWindow):
         fileMenu.addAction(self.newFileAction)
         fileMenu.addAction(self.openFileAction)
         fileMenu.addAction(self.openDirectoryAction)
+        fileMenu.addAction(self.closeFileAction)
+        fileMenu.addSeparator()
         fileMenu.addAction(self.saveFileAction)
         fileMenu.addAction(self.saveAsFileAction)
-        fileMenu.addAction(self.closeFileAction)
+        fileMenu.addSeparator()
+        fileMenu.addAction(self.exportPdfAction)
+        fileMenu.addSeparator()
         fileMenu.addAction(self.exitAppAction)
 
         editMenu = menuBar.addMenu(self.tr("Edit"))
@@ -287,18 +297,17 @@ class MarkdownEditor(QMainWindow):
     def createToolBar(self):
 
         fileToolbar = self.addToolBar(self.tr("File")) 
-
         fileToolbar.addAction(self.newFileAction)
         fileToolbar.addAction(self.openFileAction)
         fileToolbar.addAction(self.openDirectoryAction)
+        fileToolbar.addAction(self.closeFileAction)
+        fileToolbar.addSeparator()
         fileToolbar.addAction(self.saveFileAction)
         fileToolbar.addAction(self.saveAsFileAction)
-        fileToolbar.addAction(self.closeFileAction)
-
         fileToolbar.addSeparator()
-
+        fileToolbar.addAction(self.exportPdfAction)
+        
         editToolbar = self.addToolBar(self.tr("Edit")) 
-
         editToolbar.addAction(self.cutAction)
         editToolbar.addAction(self.copyAction)
         editToolbar.addAction(self.pasteAction)
@@ -317,9 +326,6 @@ class MarkdownEditor(QMainWindow):
         self.tebWidgetContextMenu.addAction(self.closeFileAction)
         self.tebWidgetContextMenu.addAction(self.closeOtherTabsAction)
         self.tebWidgetContextMenu.addAction(self.closeAllTabsAction)
-        self.tebWidgetContextMenu.addSeparator()
-        self.tebWidgetContextMenu.addAction(QAction("test 2", self))
-        self.tebWidgetContextMenu.addAction(QAction("test 3", self))
 
     def on_editor_content_changed(self):
         """
@@ -342,7 +348,7 @@ class MarkdownEditor(QMainWindow):
 
         self.update_viewer()
 
-    def openSettingsDialog(self):
+    def open_settings_dialog(self):
 
         dialog = SettingsDialog(self) # Diyalogu ana pencereye parent olarak atıyoruz
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -357,13 +363,6 @@ class MarkdownEditor(QMainWindow):
             # Şimdilik kullanıcıya yeniden başlatmasını söylemek en kolay yol.
         else:
             self.statusBar().showMessage(self.tr("Settings cancelled."), 2000)
-
-    def file_selector_file_open(self, selected_file_path: str):
-
-        with open(selected_file_path, mode="r", encoding="utf-8") as f:
-            text = f.read()
-
-        self.md_editor.setText(text)
 
     def new_file(self):
 
@@ -533,6 +532,21 @@ class MarkdownEditor(QMainWindow):
         else:
             self.statusBar().showMessage(self.tr("File save cancelled."), 2000)
 
+    def export_to_pdf(self):
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self, 
+            self.tr("Export PDF"), 
+            "output.pdf", 
+            self.tr("PDF Files (*.pdf)")
+        )
+
+        if not file_path:
+            return
+        
+        self.md_viewer.page().printToPdf(file_path)
+        self.statusBar().showMessage(self.tr(f"Exported to PDF: {os.path.basename(file_path)}"), 3000)
+
     def close_file(self) -> bool:
         
         md_editor = self._activeTextEdit()
@@ -647,7 +661,6 @@ class MarkdownEditor(QMainWindow):
         if md_editor:
             md_editor.redo()
 
-
     def show_find_replace_dialog(self):
 
         if self.findReplaceDialog is None:
@@ -659,7 +672,6 @@ class MarkdownEditor(QMainWindow):
         self.findReplaceDialog.show()
         self.findReplaceDialog.raise_()
         self.findReplaceDialog.activateWindow()
-
 
     def _get_find_flags(self, case_sensitive, whole_words):
         """Arama seçeneklerine göre QTextDocument bayraklarını hazırlar."""
@@ -736,7 +748,6 @@ class MarkdownEditor(QMainWindow):
             count += 1
 
         self.statusBar().showMessage(self.tr(f"Replaced {count} occurrences."), 3000)
-
 
     def closeEvent(self, event):
 
