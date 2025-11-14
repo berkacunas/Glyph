@@ -2,7 +2,7 @@ import os
 import glob
 
 from PyQt6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint
-from PyQt6.QtGui import QAction, QIcon, QFileSystemModel
+from PyQt6.QtGui import QAction, QIcon, QFileSystemModel, QTextCursor, QTextDocument
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QTextEdit, \
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu
 
@@ -11,6 +11,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 import markdown
 import pymdownx.emoji
 
+from .dialogs.FindReplaceDialog import FindReplaceDialog
 from .SettingsDialog import SettingsDialog
 
 ICONS_DIR = os.path.join(os.path.dirname(__file__), "assets", "icons")
@@ -233,6 +234,11 @@ class MarkdownEditor(QMainWindow):
         redoAction.triggered.connect(self.redo_text)
         self.redoAction = redoAction
 
+        findReplaceAction = QAction(self.tr("Find & Replace..."), self)
+        findReplaceAction.setShortcut("Ctrl+F")
+        findReplaceAction.triggered.connect(self.show_find_replace_dialog)
+        self.findReplaceAction = findReplaceAction
+
         enLangAction = QAction(self.englandFlagIcon, self.tr("English"), self)
         enLangAction.triggered.connect(lambda: self.change_language('en'))
         self.enLangAction = enLangAction
@@ -264,6 +270,11 @@ class MarkdownEditor(QMainWindow):
         editMenu.addAction(self.cutAction)
         editMenu.addAction(self.copyAction)
         editMenu.addAction(self.pasteAction)
+        editMenu.addSeparator()
+        editMenu.addAction(self.findReplaceAction)
+        editMenu.addSeparator()
+        editMenu.addAction(self.undoAction)
+        editMenu.addAction(self.redoAction)
         
         toolsMenu = menuBar.addMenu(self.tr("Tools"))
         toolsMenu.addAction(self.settingsAction)
@@ -291,6 +302,8 @@ class MarkdownEditor(QMainWindow):
         editToolbar.addAction(self.cutAction)
         editToolbar.addAction(self.copyAction)
         editToolbar.addAction(self.pasteAction)
+        editToolbar.addSeparator()
+        editToolbar.addAction(self.findReplaceAction)
         editToolbar.addSeparator()
         editToolbar.addAction(self.undoAction)
         editToolbar.addAction(self.redoAction)
@@ -633,6 +646,97 @@ class MarkdownEditor(QMainWindow):
         md_editor = self._activeTextEdit()
         if md_editor:
             md_editor.redo()
+
+
+    def show_find_replace_dialog(self):
+
+        if self.findReplaceDialog is None:
+            self.findReplaceDialog = FindReplaceDialog(self)
+            self.findReplaceDialog.findNextSignal.connect(self.find_next)
+            self.findReplaceDialog.replaceSignal.connect(self.replace_text)
+            self.findReplaceDialog.replaceAllSignal.connect(self.replace_all)
+
+        self.findReplaceDialog.show()
+        self.findReplaceDialog.raise_()
+        self.findReplaceDialog.activateWindow()
+
+
+    def _get_find_flags(self, case_sensitive, whole_words):
+        """Arama seçeneklerine göre QTextDocument bayraklarını hazırlar."""
+        flags = QTextDocument.FindFlag(0)
+        if case_sensitive:
+            flags |= QTextDocument.FindFlag.FindCaseSensitively
+        if whole_words:
+            flags |= QTextDocument.FindFlag.FindWholeWords
+        
+        return flags
+    
+    def find_next(self, text, case_sensitive, whole_words):
+        
+        editor = self._activeTextEdit()
+        if not editor:
+            return
+        
+        flags = self._get_find_flags(case_sensitive, whole_words)
+
+        # 1. İlk Deneme: Mevcut imleç konumundan ileriye doğru ara
+        found = editor.find(text, flags)
+
+        if not found:
+            # 2. Eğer bulunamazsa, imleci belgenin EN BAŞINA taşı
+            # (Kullanıcıya hissettirmeden hızlıca yapılır)
+            cursor = editor.textCursor()
+            cursor.movePosition(QTextCursor.MoveOperation.Start)
+            editor.setTextCursor(cursor)
+            
+            # 3. İkinci Deneme: Baştan itibaren tekrar ara
+            found = editor.find(text, flags)
+            
+            if not found:
+                # Hâlâ bulunamadıysa, metin gerçekten yok demektir.
+                # (İmleci eski yerine de döndürebiliriz ama şimdilik böyle kalsın)
+                self.statusBar().showMessage(self.tr(f"Not found: '{text}'"), 2000)
+            else:
+                self.statusBar().showMessage(self.tr(f"Found '{text}' (wrapped to top)."), 2000)
+        else:
+            self.statusBar().showMessage(self.tr(f"Found: '{text}'"), 2000)
+
+    def replace_text(self, find_text, replace_text, case_sensitive, whole_words):
+
+        editor = self._activeTextEdit()
+        if not editor:
+            return
+        
+        cursor = editor.textCursor()
+
+        # 1. Şu an seçili olan metin, aranan metinle eşleşiyor mu?
+        # (Kullanıcı "Bul"a basıp bir şey bulduysa, o şey seçilidir)
+        if cursor.hasSelection() and cursor.selectedText() == find_text:
+            cursor.insertText(replace_text)
+            self.statusBar().showMessage(self.tr("Replaced."), 2000)
+            # Değiştirdikten sonra bir sonrakini bul
+            self.find_next(find_text, case_sensitive, whole_words)
+        else:
+            # Seçili değilse, önce bulmayı dene
+            self.find_next(find_text, case_sensitive, whole_words)
+
+    def replace_all(self, find_text, replace_text, case_sensitive, whole_words):
+
+        editor = self._activeTextEdit()
+        if not editor:
+            return
+        
+        editor.moveCursor(QTextCursor.MoveOperation.Start)
+
+        flags = self._get_find_flags(case_sensitive, whole_words)
+        count = 0
+
+        while editor.find(find_text, flags):
+            editor.textCursor().insertText(replace_text)
+            count += 1
+
+        self.statusBar().showMessage(self.tr(f"Replaced {count} occurrences."), 3000)
+
 
     def closeEvent(self, event):
 

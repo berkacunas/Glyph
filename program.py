@@ -4,7 +4,7 @@ from PyQt6.QtCore import Qt, QCoreApplication, QTranslator, QLocale, QSettings
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtGui import QIcon, QFont
 
-from Glyph import MarkdownEditor
+from src.Glyph import MarkdownEditor
 
 if __name__ == "__main__":
 
