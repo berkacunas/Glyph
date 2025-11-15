@@ -35,22 +35,23 @@ class MarkdownEditor(QMainWindow):
             'def_list',         # syntax for definition lists
             'attr_list',        # attribute lists to generated HTML
             'sane_lists',       # enables list items with multiple paragraphs
-            'pymdownx.emoji',   # 
+            'pymdownx.emoji',   # pymdownx package
             'footnotes'
         ]
 
         markdown_extension_configs = {
-            'pymdownx.emoji': { 'emoji_index': pymdownx.emoji.gemoji,
-                                'emoji_generator': pymdownx.emoji.to_alt,
-                                "alt": 'html_entity',
-                                "options": {
-                                    "attributes": {
-                                        "align": "absmiddle",
-                                        "height": "20px",
-                                        "width": "20px"
-                                    }
-                                }
-                            }
+            'pymdownx.emoji': { 
+                'emoji_index': pymdownx.emoji.gemoji,
+                'emoji_generator': pymdownx.emoji.to_alt,
+                "alt": 'html_entity',
+                "options": {
+                    "attributes": {
+                        "align": "absmiddle",
+                        "height": "20px",
+                        "width": "20px"
+                    }
+                }
+            }
         }
 
         self.markdown = markdown.Markdown(extensions=markdown_extensions, extension_configs=markdown_extension_configs)
@@ -64,7 +65,6 @@ class MarkdownEditor(QMainWindow):
         self.mainWidget = QWidget()
 
         self.mainVLayout = QVBoxLayout(self.mainWidget)
-        # self.editorGroupBox = QGroupBox(title=self.tr("Markdowns"))
         self.editorWidget = QWidget()
         self.editorVLayout = QVBoxLayout()
 
@@ -91,18 +91,16 @@ class MarkdownEditor(QMainWindow):
     def setupUi(self):
 
         self.fileSysModel = QFileSystemModel()
-        # self.fileSysModel.setRootPath(QDir.currentPath())
         self.fileSysModel.setNameFilters(["*.md"])
         self.fileSysModel.setNameFilterDisables(False)
 
         self.fileSysTreeView = QTreeView()
-        self.fileSysTreeView.setHeaderHidden(True) # Başlıkları göster
-        self.fileSysTreeView.setAnimated(True) # Animasyonlu genişletme/daraltma
-        self.fileSysTreeView.setIndentation(20) # Girinti mesafesi
-        self.fileSysTreeView.setSortingEnabled(False) # Sıralama aktif (sütun başlıklarına tıklayınca)
+        self.fileSysTreeView.setHeaderHidden(True)
+        self.fileSysTreeView.setAnimated(True)
+        self.fileSysTreeView.setIndentation(20)
+        self.fileSysTreeView.setSortingEnabled(False)
         self.fileSysTreeView.clicked.connect(self.on_filesystree_item_clicked)
 
-        # self.md_editor = self._createEditor()
         self.md_viewer = QWebEngineView()
 
         self.editorTabWidget = QTabWidget()
@@ -121,17 +119,12 @@ class MarkdownEditor(QMainWindow):
         self.editorHSplitter.addWidget(self.editorTabWidget)
         self.editorHSplitter.addWidget(self.md_viewer)
 
-        # self.editorHSplitter.setChildrenCollapsible(False)
         self.editorHSplitter.setCollapsible(1, False)
         self.editorHSplitter.setCollapsible(2, True)
 
         self.editorHSplitter.setStretchFactor(0, 0)
         self.editorHSplitter.setStretchFactor(1, 1)
         self.editorHSplitter.setStretchFactor(2, 0)
-
-        # self.fileSysTreeView.setMinimumWidth(200)
-        # self.md_editor.setMinimumWidth(200)
-        # self.md_viewer.setMinimumWidth(300)
       
     def createIcons(self):
 
@@ -150,7 +143,6 @@ class MarkdownEditor(QMainWindow):
         self.redoIcon = QIcon(os.path.join(ICONS_DIR, "redo.ico"))
 
         self.settingsIcon = QIcon(os.path.join(ICONS_DIR, "settings.ico"))
-
         self.englandFlagIcon = QIcon(os.path.join(ICONS_DIR, "england-flag.ico"))
         self.turkeyFlagIcon = QIcon(os.path.join(ICONS_DIR, "turkey-flag.ico"))
 
@@ -328,10 +320,7 @@ class MarkdownEditor(QMainWindow):
         self.tebWidgetContextMenu.addAction(self.closeAllTabsAction)
 
     def on_editor_content_changed(self):
-        """
-        Fires ONLY when the user actually types in the editor.
-        Sets the 'is_changed' flag and updates the viewer.
-        """
+
         md_editor = self._activeTextEdit()
         if not md_editor:
             return
@@ -350,17 +339,14 @@ class MarkdownEditor(QMainWindow):
 
     def open_settings_dialog(self):
 
-        dialog = SettingsDialog(self) # Diyalogu ana pencereye parent olarak atıyoruz
+        dialog = SettingsDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
-            dialog.saveSettings() # Ayarları kaydet
+            dialog.saveSettings()
             QMessageBox.information(
                 self,
-                self.tr("Settings Saved"), # Mesaj kutusu başlığı
+                self.tr("Settings Saved"),
                 self.tr("Settings have been saved. Please restart the application for some changes (like language) to take full effect.")
             )
-            # Dil değişikliğini hemen uygulamak için ana pencereyi yeniden oluşturabiliriz (karmaşık)
-            # veya uygulamayı yeniden başlatmayı önerebiliriz.
-            # Şimdilik kullanıcıya yeniden başlatmasını söylemek en kolay yol.
         else:
             self.statusBar().showMessage(self.tr("Settings cancelled."), 2000)
 
@@ -421,9 +407,9 @@ class MarkdownEditor(QMainWindow):
         if directory_path:
             if not self.is_model_set:
                 self.fileSysTreeView.setModel(self.fileSysModel)
-                self.fileSysTreeView.hideColumn(1) # Boyut
-                self.fileSysTreeView.hideColumn(2) # Tip
-                self.fileSysTreeView.hideColumn(3) # Değişiklik Tarihi
+                self.fileSysTreeView.hideColumn(1) # Size
+                self.fileSysTreeView.hideColumn(2) # Type
+                self.fileSysTreeView.hideColumn(3) # Modified on
                 self.is_model_set = True
 
             self.fileSysModel.setRootPath(directory_path)
@@ -436,15 +422,11 @@ class MarkdownEditor(QMainWindow):
                 md_files_list = glob.glob(search_pattern)
                 md_file_count = len(md_files_list)
             except Exception as e:
-                # Bir hata olursa (örn: erişim izni yok)
-                print(f"Dosyalar sayılırken hata: {e}")
-                # Hata durumunda sayıyı 0 olarak bırak
+                print(self.tr(f"Error while counting files: {e}"))
 
-            # 2. Mesajı oluştur
             dir_name = os.path.basename(directory_path)
             message = self.tr(f"Directory opened: {dir_name}  |  Found {md_file_count} markdown files")
 
-            # 3. Mesajı 3 saniyeliğine (3000ms) göster
             self.statusBar().showMessage(message, 3000)
 
     def save_file(self) -> bool:
@@ -463,14 +445,12 @@ class MarkdownEditor(QMainWindow):
         if not file_path:
             return self.saveas_file()
 
-
-        # 3. Dosya değişmiş ve mevcut bir yolu varsa, doğrudan kaydet
         try:
             self._write_file(file_path, md_editor.toPlainText())
 
-            md_editor.setProperty("is_changed", False) # Değişiklik bayrağını sıfırla
+            md_editor.setProperty("is_changed", False)
             
-            # Sekme başlığındaki '*' işaretini kaldır
+            # Remove '*' from tab title.
             current_index = self.editorTabWidget.currentIndex()
             tab_title = self.editorTabWidget.tabText(current_index).rstrip('*')
             self.editorTabWidget.setTabText(current_index, tab_title)
@@ -490,7 +470,7 @@ class MarkdownEditor(QMainWindow):
         
         md_editor = self._activeTextEdit()
         if not md_editor:
-            return False # Kaydedilecek aktif bir editör yok
+            return False
         
         file_path = md_editor.property("file_path")
 
@@ -517,7 +497,7 @@ class MarkdownEditor(QMainWindow):
                 current_index = self.editorTabWidget.currentIndex()
                 self.editorTabWidget.setTabText(current_index, os.path.basename(filePath))
 
-                self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(filePath)}") # Pencere başlığı
+                self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(filePath)}")
                 self.statusBar().showMessage(self.tr(f"File saved in: {os.path.basename(filePath)}"), 3000)
                 return True
 
@@ -581,35 +561,26 @@ class MarkdownEditor(QMainWindow):
         try:
             keep_widget = self.editorTabWidget.widget(self._context_menu_tab_index)
             if not keep_widget:
-                return # Bir hata oluştu
+                return
         except Exception:
-            return # Geçersiz indeks, bir şey yapma
+            return
         
 
         while self.editorTabWidget.count() > 1:
             
-            # 3. Bizim widget'ımızın GÜNCEL indeksini bul
             keep_index = self.editorTabWidget.indexOf(keep_widget)
 
-            # 4. Kapatılacak hedefi seç (Her zaman 0'ı dene)
             current_index = 0
             if current_index == keep_index:
-                # Eğer tutmak istediğimiz sekme zaten 0'daysa,
-                # onun yerine 1. sekmeyi kapatmayı dene.
                 current_index = 1
                 
-            # 5. Kapatılacak hedef sekmeyi aktif hale getir
             self.editorTabWidget.setCurrentIndex(current_index)
             
-            # 6. Güçlendirilmiş close_file metodumuzu çağır
             if not self.close_file():
-                # Kullanıcı 'İptal' dedi, tüm işlemi durdur.
                 return
             
     def close_all_tabs(self):
-        """
-        Tüm sekmeleri, her biri için 'close_file' çağırarak kapatır.
-        """
+
         while self.editorTabWidget.count() > 0:
             self.editorTabWidget.setCurrentIndex(0)
             if not self.close_file():
@@ -674,7 +645,7 @@ class MarkdownEditor(QMainWindow):
         self.findReplaceDialog.activateWindow()
 
     def _get_find_flags(self, case_sensitive, whole_words):
-        """Arama seçeneklerine göre QTextDocument bayraklarını hazırlar."""
+
         flags = QTextDocument.FindFlag(0)
         if case_sensitive:
             flags |= QTextDocument.FindFlag.FindCaseSensitively
@@ -691,22 +662,14 @@ class MarkdownEditor(QMainWindow):
         
         flags = self._get_find_flags(case_sensitive, whole_words)
 
-        # 1. İlk Deneme: Mevcut imleç konumundan ileriye doğru ara
         found = editor.find(text, flags)
-
         if not found:
-            # 2. Eğer bulunamazsa, imleci belgenin EN BAŞINA taşı
-            # (Kullanıcıya hissettirmeden hızlıca yapılır)
             cursor = editor.textCursor()
             cursor.movePosition(QTextCursor.MoveOperation.Start)
             editor.setTextCursor(cursor)
             
-            # 3. İkinci Deneme: Baştan itibaren tekrar ara
             found = editor.find(text, flags)
-            
             if not found:
-                # Hâlâ bulunamadıysa, metin gerçekten yok demektir.
-                # (İmleci eski yerine de döndürebiliriz ama şimdilik böyle kalsın)
                 self.statusBar().showMessage(self.tr(f"Not found: '{text}'"), 2000)
             else:
                 self.statusBar().showMessage(self.tr(f"Found '{text}' (wrapped to top)."), 2000)
@@ -721,15 +684,11 @@ class MarkdownEditor(QMainWindow):
         
         cursor = editor.textCursor()
 
-        # 1. Şu an seçili olan metin, aranan metinle eşleşiyor mu?
-        # (Kullanıcı "Bul"a basıp bir şey bulduysa, o şey seçilidir)
         if cursor.hasSelection() and cursor.selectedText() == find_text:
             cursor.insertText(replace_text)
             self.statusBar().showMessage(self.tr("Replaced."), 2000)
-            # Değiştirdikten sonra bir sonrakini bul
             self.find_next(find_text, case_sensitive, whole_words)
         else:
-            # Seçili değilse, önce bulmayı dene
             self.find_next(find_text, case_sensitive, whole_words)
 
     def replace_all(self, find_text, replace_text, case_sensitive, whole_words):
@@ -761,7 +720,6 @@ class MarkdownEditor(QMainWindow):
                     event.accept()
                 else:
                     event.ignore()
-
                 event.accept()
             elif response == QMessageBox.StandardButton.Cancel:
                 event.ignore()
@@ -779,28 +737,28 @@ class MarkdownEditor(QMainWindow):
             self.tr("Language Change"),
             self.tr("Language changed. Please restart the application to apply changes fully.")
         )
-        # Dil ayarını kaydet (örneğin config dosyanıza)
-        # Daha sonra uygulama başlatıldığında bu ayarı okuyup doğru çevirmeni yükleyin.
+        # Save the language setting (e.g., to your config file)
+        # Later, when the application starts, read this setting and load the correct translator.
         
-        # Geçici olarak, direkt çevirmeni yükleyip UI'yi yeniden oluşturalım (daha kompleks bir yöntem)
-        # Aslında çoğu zaman uygulama yeniden başlatılır.
+        # Temporarily, let's load the translator directly and recreate the UI (a more complex method)
+        # Usually, the application is restarted.
         self.translator.load(f"editor_{lang_code}", os.path.join(os.path.dirname(__file__), "translations"))
         QApplication.instance().installTranslator(self.translator)
         
-        # UI'yi yeniden oluşturmak (zorlu bir yöntem, uygulama yeniden başlatmak daha kolay)
-        self._retranslate_ui() # UI elemanlarını yeniden çevir
+        # Recreating the UI (a difficult method, restarting is easier)
+        self._retranslate_ui() # Retranslate UI elements
     
     def _retranslate_ui(self):
-        # Tüm UI metinlerini tekrar ayarlar. Bu, genellikle uygulama yeniden başlatıldığında otomatik olur.
-        # Çalışma zamanı dil değiştirmeyi desteklemek için her widget'ın set text metodunu tekrar çağırmanız gerekir.
-        # Basitlik adına sadece ana pencere başlığını güncelliyorum.
-        self.setWindowTitle(self.tr("Advanced Markdown Editor")) # Başlık çevirisi
-        # self.statusBar().showMessage(self.tr("Ready")) # Status bar mesajı da tekrar set edilmeli
+        # Resets all UI texts. This usually happens automatically on application restart.
+        # To support runtime language change, you need to call the set text method of every widget again.
+        # For simplicity, I'm only updating the main window title.
+        self.setWindowTitle(self.tr("Advanced Markdown Editor")) # Title translation
+        # self.statusBar().showMessage(self.tr("Ready")) # Status bar message must also be set again
         
-        # Diğer tüm menü ve aksiyon metinleri de burada tekrar ayarlanmalıdır.
-        # Bu, QAction'ların metinlerini yeniden ayarlamak, QMenu başlıklarını güncellemek demektir.
-        # Bu yüzden, çoğu uygulama dil değişikliğinde "lütfen uygulamayı yeniden başlatın" der.
-        # Kompleks bir yöntemdir, bu yüzden restart tavsiye edilir.
+        # All other menu and action texts must also be set here.
+        # This means resetting QAction texts, updating QMenu titles.
+        # This is why most applications say "please restart the application" on language change.
+        # It's a complex method, so a restart is recommended.
     """
     
     def on_filesystree_item_clicked(self, index: QModelIndex):
@@ -815,8 +773,6 @@ class MarkdownEditor(QMainWindow):
         self._open_file_in_new_tab(file_path)
     
     def show_editorTab_context_menu(self, pos: QPoint):
-        # 'pos' parametresi, menüyü nerede göstereceğinizi bilmenizi sağlar.
-        # Genellikle bu lokal 'pos'u global ekran koordinatlarına çeviririz:
         
         widget = self.sender()
 
@@ -876,9 +832,7 @@ class MarkdownEditor(QMainWindow):
             raise
 
     def _createEditor(self, file_name: str = "Untitled.md", file_path: str = None) -> QTextEdit:
-        """
-        Creates a new QTextEdit, sets its properties, and adds it to the tab widget.
-        """
+
         md_editor = QTextEdit()
         md_editor.textChanged.connect(self.on_editor_content_changed)
         
@@ -901,20 +855,18 @@ class MarkdownEditor(QMainWindow):
         html_body = self.markdown.convert(markdown_text)
 
         html_full_document = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="utf-8">
-            <link rel="stylesheet" href="{self.css_file_url}">
-        </head>
-        <body>
-            {html_body}
-        </body>
-        </html>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <link rel="stylesheet" href="{self.css_file_url}">
+            </head>
+            <body>
+                {html_body}
+            </body>
+            </html>
         """
 
-        # Markdown dosyasının kendi temel URL'ini al
-        #(Bu, .md dosyasındaki göreceli resimlerin çalışması için kritiktir)
         current_file_path = md_editor.property("file_path")
         
         if current_file_path:
@@ -936,12 +888,8 @@ class MarkdownEditor(QMainWindow):
         return None
 
     def _open_file_in_new_tab(self, file_path: str):
-        """
-        Bir dosyayı yeni bir sekmede açar.
-        Eğer dosya zaten açıksa, o sekmeye odaklanır.
-        """
         
-        # 1. Dosya zaten açık mı diye kontrol et
+        # 1. Check if the file is already open
         for i in range(self.editorTabWidget.count()):
             editor = self.editorTabWidget.widget(i)
             if isinstance(editor, QTextEdit) and editor.property("file_path") == file_path:
@@ -949,9 +897,9 @@ class MarkdownEditor(QMainWindow):
                 self.statusBar().showMessage(self.tr(f"File already open: {os.path.basename(file_path)}"), 2000)
                 return
 
-        # 2. Dosya açık değilse, oku
+        # 2. If the file is not open, read it.
         try:
-            text = self._open_file(file_path) # Bu sizin diski okuyan fonksiyonunuz
+            text = self._open_file(file_path)
         except Exception as e:
             QMessageBox.critical(
                 self,
@@ -960,17 +908,17 @@ class MarkdownEditor(QMainWindow):
             )
             return
 
-        # 3. Yeni bir editör (sekme) oluştur ve içeriği ata
+        # 3. Create a new editor tab and assign content
         file_name = os.path.basename(file_path)
         md_editor = self._createEditor(file_name=file_name, file_path=file_path)
         
-        md_editor.setPlainText(text) # setPlainText, 'setText'ten daha güvenlidir
+        md_editor.setPlainText(text) 
         
-        # textChanged sinyali 'setPlainText' ile tetiklendi, 
-        # bu yüzden 'is_changed' bayrağını manuel olarak sıfırlamalıyız.
+        # The textChanged signal was triggered by 'setPlainText',
+        # so we must manually reset the 'is_changed' flag.
         md_editor.setProperty("is_changed", False)
         current_index = self.editorTabWidget.currentIndex()
-        self.editorTabWidget.setTabText(current_index, file_name) # '*' işaretini kaldır
+        self.editorTabWidget.setTabText(current_index, file_name)
 
         self.setWindowTitle(self.tr("Glyph") + f" - {file_name}")
         self.statusBar().showMessage(self.tr(f"Opened file: {file_name}"), 3000)

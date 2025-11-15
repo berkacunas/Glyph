@@ -53,7 +53,7 @@ class SettingsDialog(QDialog):
         backupGroupBox.setLayout(backupVLayout)
         mainLayout.addWidget(backupGroupBox)
 
-        # ... Daha sonra eklenecek ayarları buraya yaz ...
+        # ... Write the settings to be added later here ...
 
         mainLayout.addStretch()
 
@@ -68,17 +68,18 @@ class SettingsDialog(QDialog):
         index = self.languageComboBox.findData(current_lang)
         if index != -1:
             self.languageComboBox.setCurrentIndex(index)
-        # ... Eklenecek ayarlar burada yüklenebilir..
+        # ... Settings to be added can be loaded here ..
 
     def saveSettings(self):
 
             selected_lang_code = self.languageComboBox.currentData()
             self.settings.setValue("language/current", selected_lang_code)
-            # ... Eklenecek ayarlar burada kaydedilebilir ...
+            # ... Settings to be added can be saved here ...
 
             self.settings.sync()
         
     def exportSettings(self):
+        
         default_filename = f"{QCoreApplication.applicationName()}_settings.json"
         default_path = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation)
         initial_path = os.path.join(default_path, default_filename)
@@ -146,10 +147,10 @@ class SettingsDialog(QDialog):
                     )
                 else:
                     return
-                    # self.statusBar().showMessage(QCoreApplication.translate("SettingsDialog", "Import cancelled by user."), 2000) # Bu metot QDialog'da yok, hata verir. Ana pencere status bar'ı güncellenmeliydi.
-                    # QDialog'un kendi status bar'ı olmadığı için bu satırı çıkarıyoruz veya ana pencereden bir sinyal gönderip güncelletiyoruz.
-                    # Şimdilik bu satırı kaldırıyorum, aksi halde SettingsDialog'da statusBar hatası alırsınız.
-                    # Eğer çok istenirse, parent'a bir sinyal emit edilebilir.
+                    # self.statusBar().showMessage(QCoreApplication.translate("SettingsDialog", "Import cancelled by user."), 2000) # This method does not exist in QDialog and will throw an error. The main window's status bar should have been updated.
+                    # Since QDialog doesn't have its own status bar, we either remove this line or send a signal from the main window to update it.
+                    # I'm removing this line for now; otherwise, we'll get a statusBar error in the SettingsDialog.
+                    # If desired, a signal can be emitted to the parent.
 
             except json.JSONDecodeError:
                 QMessageBox.critical(
