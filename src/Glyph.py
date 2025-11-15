@@ -474,7 +474,6 @@ class MarkdownEditor(QMainWindow):
         
         file_path = md_editor.property("file_path")
 
-
         initial_path = file_path if file_path else os.path.expanduser("~")
         initial_filename = "Untitled.md"
         if not file_path and md_editor.toPlainText().strip():
@@ -514,10 +513,17 @@ class MarkdownEditor(QMainWindow):
 
     def export_to_pdf(self):
 
+        if self.editorTabWidget.count() == 0:
+            self.statusBar().showMessage(self.tr("No active document to export."), 3000)
+            return
+        
+        current_index = self.editorTabWidget.currentIndex()
+        initial_filename = self.editorTabWidget.tabText(current_index).rsplit('.', 1)[0]
+
         file_path, _ = QFileDialog.getSaveFileName(
             self, 
             self.tr("Export PDF"), 
-            "output.pdf", 
+            initial_filename, 
             self.tr("PDF Files (*.pdf)")
         )
 
