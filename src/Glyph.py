@@ -52,22 +52,21 @@ class MarkdownEditor(QMainWindow):
 
         super().__init__()
 
-        self.project_root_dir = os.path.dirname(__file__)
-        css_file_path = os.path.join(self.project_root_dir, "assets", "css", "main.css")
+        self.src_root_dir = os.path.dirname(__file__)
+        css_file_path = os.path.join(self.src_root_dir, "assets", "css", "main.css")
         self.css_file_url = QUrl.fromLocalFile(css_file_path).toString()
 
-        qss_file_path = os.path.join(self.project_root_dir, "assets", "css", "glyph_style.qss")
+        qss_file_path = os.path.join(self.src_root_dir, "assets", "css", "glyph_style.qss")
         try:
             with open(qss_file_path, "r", encoding="utf-8") as f:
                 qss_content = f.read()
                 
             self.setStyleSheet(qss_content)
-            
         except FileNotFoundError as fe:
             raise fe
         except Exception as e:
             raise e
-
+        
         self.markdown = markdown.Markdown(extensions=self.MARKDOWN_EXTENSIONS, extension_configs=self.MARKDOWN_EXTENSION_CONFIGS)
         self.editor_content_changed = False
         self.current_file_path = None
@@ -93,6 +92,10 @@ class MarkdownEditor(QMainWindow):
         self.setCentralWidget(self.mainWidget)
 
         self.findReplaceDialog = None
+        
+        # Help Menu (Singleton) Attributes
+        self.readme_dialog = None # Diyalog penceresini tutar
+        self.readme_viewer = None # AĞIR QWebEngineView nesnesini tutar
 
         self.setupUi()
         self.createIcons()
@@ -164,6 +167,9 @@ class MarkdownEditor(QMainWindow):
         self.settingsIcon = QIcon(os.path.join(ICONS_DIR, "settings.ico"))
         self.englandFlagIcon = QIcon(os.path.join(ICONS_DIR, "england-flag.ico"))
         self.turkeyFlagIcon = QIcon(os.path.join(ICONS_DIR, "turkey-flag.ico"))
+
+        self.readmeIcon = QIcon(os.path.join(ICONS_DIR, "readme.ico")) 
+        self.aboutIcon = QIcon(os.path.join(ICONS_DIR, "about.ico"))
 
     def createActions(self):
 
@@ -293,6 +299,16 @@ class MarkdownEditor(QMainWindow):
         settingsAction.triggered.connect(self.open_settings_dialog)
         self.settingsAction = settingsAction
 
+        showReadmeAction = QAction(self.readmeIcon, self.tr("View README"), self)
+        showReadmeAction.setStatusTip(self.tr("Show the application's README file"))
+        showReadmeAction.triggered.connect(self.show_readme_dialog)
+        self.showReadmeAction = showReadmeAction
+
+        showAboutAction = QAction(self.aboutIcon, self.tr("About Glyph..."), self)
+        showAboutAction.setStatusTip(self.tr("Show application information"))
+        showAboutAction.triggered.connect(self.show_about_dialog)
+        self.showAboutAction = showAboutAction
+
     def createMenuBar(self):
 
         menuBar = self.menuBar()
@@ -331,6 +347,10 @@ class MarkdownEditor(QMainWindow):
         selectLanguageMenu.addAction(self.enLangAction)
         selectLanguageMenu.addAction(self.trLangAction)
 
+        helpMenu = menuBar.addMenu(self.tr("Help"))
+        helpMenu.addAction(self.showReadmeAction)
+        helpMenu.addAction(self.showAboutAction)
+
     def createToolBar(self):
 
         fileToolbar = self.addToolBar(self.tr("File")) 
@@ -363,7 +383,6 @@ class MarkdownEditor(QMainWindow):
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         previewToolbar.addWidget(spacer)
         previewToolbar.addAction(self.togglePreviewAction)
-
 
     def createContextMenu(self):
 
@@ -845,6 +864,78 @@ class MarkdownEditor(QMainWindow):
         self.findReplaceDialog.raise_()
         self.findReplaceDialog.activateWindow()
 
+    def show_about_dialog(self):
+
+        about_text = f"""
+            <h3>{self.tr("Glyph")} v1.0</h3>
+            <p>{self.tr("A modern Markdown Editor built with PyQt6.")}</p>
+            <p>{self.tr("Developed by:")} Berk Acunaş</p>
+            <p>{self.tr("License:")} {self.tr("GPL-v3 & Commercial")}</p>
+            <p>—</p>
+            <p>{self.tr("This application uses the following core components:")}</p>
+            <ul>
+                <li>Python</li>
+                <li>PyQt6</li>
+                <li>QWebEngine (Chromium)</li>
+                <li>python-markdown</li>
+                <li>Pygments</li>
+            </ul>
+        """
+        QMessageBox.about(self, self.tr("About Glyph"), about_text)
+
+    def show_readme_dialog(self):
+        
+        project_root_dir = os.path.dirname(self.src_root_dir)
+
+        settings = QSettings()
+        current_lang = settings.value("language/current", "en", type=str)
+
+        readme_filename = "README.md" # Varsayılan (İngilizce)
+        if current_lang == "tr":
+            readme_filename = "README.tr.md"
+
+        readme_path = os.path.join(project_root_dir, readme_filename)
+        try:
+            with open(readme_path, 'r', encoding='utf-8') as f:
+                readme_markdown_text = f.read()
+        except FileNotFoundError:
+            QMessageBox.critical(self, self.tr("Error"), self.tr("README.md file not found!"))
+            return
+        except Exception as e:
+            QMessageBox.critical(self, self.tr("Error"), f"Could not read README.md: {e}")
+            return
+
+        html_body = self.markdown.convert(readme_markdown_text)
+        html_full_document = f"""
+            <!DOCTYPE html><html><head>
+                <meta charset="utf-8">
+                <link rel="stylesheet" href="{self.css_file_url}">
+            </head><body>
+                {html_body}
+            </body></html>
+        """
+        if not self.readme_dialog:
+            self.readme_dialog = QDialog(self)
+            self.readme_dialog.setWindowTitle(self.tr("README - Glyph"))
+            self.readme_dialog.setMinimumSize(700, 800)
+        
+            dialog_layout = QVBoxLayout()
+
+            # Create and save heavy QWebEngineView object once
+            self.readme_viewer = QWebEngineView()
+
+            dialog_layout.addWidget(self.readme_viewer)
+            self.readme_dialog.setLayout(dialog_layout)
+        
+        # We set 'baseUrl' to the project root directory so that relative images in the 
+        # # README (if any) will work.
+        base_url = QUrl.fromLocalFile(self.src_root_dir)
+        self.readme_viewer.setHtml(html_full_document, baseUrl=base_url)
+            
+        self.readme_dialog.show()
+        self.readme_dialog.raise_()
+        self.readme_dialog.activateWindow()
+    
     def _get_find_flags(self, case_sensitive, whole_words):
 
         flags = QTextDocument.FindFlag(0)
