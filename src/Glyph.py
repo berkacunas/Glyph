@@ -4,8 +4,8 @@ import urllib.parse
 
 from PyQt6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint, QSettings
 from PyQt6.QtGui import QAction, QIcon, QFont, QFileSystemModel, QTextCursor, QTextDocument, QDesktopServices
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QTextEdit, \
-                            QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QDockWidget, QTextEdit, \
+                            QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu, QSizePolicy
 
 from PyQt6.QtWebEngineWidgets import QWebEngineView 
 
@@ -56,6 +56,18 @@ class MarkdownEditor(QMainWindow):
         css_file_path = os.path.join(self.project_root_dir, "assets", "css", "main.css")
         self.css_file_url = QUrl.fromLocalFile(css_file_path).toString()
 
+        qss_file_path = os.path.join(self.project_root_dir, "assets", "css", "glyph_style.qss")
+        try:
+            with open(qss_file_path, "r", encoding="utf-8") as f:
+                qss_content = f.read()
+                
+            self.setStyleSheet(qss_content)
+            
+        except FileNotFoundError as fe:
+            raise fe
+        except Exception as e:
+            raise e
+
         self.markdown = markdown.Markdown(extensions=self.MARKDOWN_EXTENSIONS, extension_configs=self.MARKDOWN_EXTENSION_CONFIGS)
         self.editor_content_changed = False
         self.current_file_path = None
@@ -70,10 +82,10 @@ class MarkdownEditor(QMainWindow):
         self.editorWidget = QWidget()
         self.editorVLayout = QVBoxLayout()
 
-        self.editorHSplitter = QSplitter()
-        self.editorHSplitter.setOrientation(Qt.Orientation.Horizontal)
+        self.mainContentSplitter = QSplitter()
+        self.mainContentSplitter.setOrientation(Qt.Orientation.Horizontal)
 
-        self.editorVLayout.addWidget(self.editorHSplitter)
+        self.editorVLayout.addWidget(self.mainContentSplitter)
         self.editorWidget.setLayout(self.editorVLayout)
 
         # self.mainVLayout.addLayout(self.menuHLayout ,stretch=0)
@@ -103,6 +115,11 @@ class MarkdownEditor(QMainWindow):
         self.fileSysTreeView.setSortingEnabled(False)
         self.fileSysTreeView.clicked.connect(self.on_filesystree_item_clicked)
 
+        self.fileTreeDock = QDockWidget(self.tr("Explorer"), self)
+        self.fileTreeDock.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
+        self.fileTreeDock.setWidget(self.fileSysTreeView)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.fileTreeDock)
+
         self.md_viewer = QWebEngineView()
 
         self.editorTabWidget = QTabWidget()
@@ -110,23 +127,17 @@ class MarkdownEditor(QMainWindow):
         self.editorTabWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.editorTabWidget.customContextMenuRequested.connect(self.show_editorTab_context_menu)
         self.editorTabWidget.setProperty("is_empty", True)
-        self.editorTabWidget.setStyleSheet("""
-            QTabWidget::pane[is_empty="true"] {
-                background-color: #F0F0F0;
-                border-top: 1px solid #C0C0C0;
-            }
-        """)
         
-        self.editorHSplitter.addWidget(self.fileSysTreeView)
-        self.editorHSplitter.addWidget(self.editorTabWidget)
-        self.editorHSplitter.addWidget(self.md_viewer)
+        self.mainContentSplitter.addWidget(self.editorTabWidget)
+        self.mainContentSplitter.addWidget(self.md_viewer)
 
-        self.editorHSplitter.setCollapsible(1, False)
-        self.editorHSplitter.setCollapsible(2, True)
+        # self.mainContentSplitter.setCollapsible(0, False)
+        # self.mainContentSplitter.setCollapsible(1, True)
 
-        self.editorHSplitter.setStretchFactor(0, 0)
-        self.editorHSplitter.setStretchFactor(1, 1)
-        self.editorHSplitter.setStretchFactor(2, 0)
+        self.mainContentSplitter.setStretchFactor(0, 1)
+        self.mainContentSplitter.setStretchFactor(1, 1)
+        
+        self.md_viewer.hide()
       
     def createIcons(self):
 
@@ -147,6 +158,8 @@ class MarkdownEditor(QMainWindow):
         self.undoIcon = QIcon(os.path.join(ICONS_DIR, "undo.ico"))
         self.redoIcon = QIcon(os.path.join(ICONS_DIR, "redo.ico"))
         self.findIcon = QIcon(os.path.join(ICONS_DIR, "find.ico"))
+
+        self.previewIcon = QIcon(os.path.join(ICONS_DIR, "eye.ico"))
 
         self.settingsIcon = QIcon(os.path.join(ICONS_DIR, "settings.ico"))
         self.englandFlagIcon = QIcon(os.path.join(ICONS_DIR, "england-flag.ico"))
@@ -258,6 +271,14 @@ class MarkdownEditor(QMainWindow):
         findReplaceAction.triggered.connect(self.show_find_replace_dialog)
         self.findReplaceAction = findReplaceAction
 
+        togglePreviewAction = QAction(self.previewIcon, self.tr("Toggle Preview"), self)
+        togglePreviewAction.setShortcut("Ctrl+Shift+V")
+        togglePreviewAction.setStatusTip(self.tr("Show/Hide the Markdown preview pane"))
+        togglePreviewAction.setCheckable(True)
+        togglePreviewAction.setChecked(False)
+        togglePreviewAction.toggled.connect(self.toggle_preview_panel)
+        self.togglePreviewAction = togglePreviewAction
+
         enLangAction = QAction(self.englandFlagIcon, self.tr("English"), self)
         enLangAction.triggered.connect(lambda: self.change_language('en'))
         self.enLangAction = enLangAction
@@ -336,6 +357,13 @@ class MarkdownEditor(QMainWindow):
 
         toolsToolbar = self.addToolBar(self.tr("Tools")) 
         toolsToolbar.addAction(self.settingsAction)
+
+        previewToolbar = self.addToolBar(self.tr("Preview")) 
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        previewToolbar.addWidget(spacer)
+        previewToolbar.addAction(self.togglePreviewAction)
+
 
     def createContextMenu(self):
 
@@ -772,6 +800,38 @@ class MarkdownEditor(QMainWindow):
         md_editor = self._activeTextEdit()
         if md_editor:
             md_editor.redo()
+
+    def toggle_preview_panel(self, checked: bool):
+        
+        # 1. Splitter'ın mevcut boyutlarını al (Sadece Editör ve Görüntüleyici)
+        #    örn: [1000, 0]
+        sizes = self.mainContentSplitter.sizes()
+        
+        editor_size = sizes[0]
+        viewer_size = sizes[1]
+
+        if checked:
+            # --- GÖRÜNTÜLEYİCİYİ AÇ ---
+            if viewer_size > 0: 
+                return # Zaten açıksa dokunma
+
+            total_space = editor_size # Editörün tüm alanını al
+            new_editor_size = total_space // 2
+            new_viewer_size = total_space - new_editor_size
+            
+            # Sadece 2 elemanlı yeni boyutları emret
+            self.mainContentSplitter.setSizes([new_editor_size, new_viewer_size])
+            self.md_viewer.show()
+            
+        else:
+            # --- GÖRÜNTÜLEYİCİYİ KAPAT ---
+            if viewer_size == 0: 
+                return # Zaten kapalıysa dokunma
+                
+            total_space = editor_size + viewer_size
+            
+            # Tüm alanı Editöre ver
+            self.mainContentSplitter.setSizes([total_space, 0])
 
     def show_find_replace_dialog(self):
 
