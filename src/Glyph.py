@@ -1,8 +1,9 @@
 import os
 import glob
+import urllib.parse
 
 from PyQt6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint
-from PyQt6.QtGui import QAction, QIcon, QFileSystemModel, QTextCursor, QTextDocument
+from PyQt6.QtGui import QAction, QIcon, QFileSystemModel, QTextCursor, QTextDocument, QDesktopServices
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QTextEdit, \
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu
 
@@ -131,11 +132,12 @@ class MarkdownEditor(QMainWindow):
 
         self.newFileIcon = QIcon(os.path.join(ICONS_DIR, "new.ico"))
         self.openFileIcon = QIcon(os.path.join(ICONS_DIR, "open.ico"))
+        self.openDirectoryIcon = QIcon(os.path.join(ICONS_DIR, "open-directory.ico"))
         self.saveFileIcon = QIcon(os.path.join(ICONS_DIR, "save.ico"))
         self.saveAsFileIcon = QIcon(os.path.join(ICONS_DIR, "saveas.ico"))
         self.saveAllFileIcon = QIcon(os.path.join(ICONS_DIR, "saveall.ico"))
-
         self.pdfIcon = QIcon(os.path.join(ICONS_DIR, "pdf.ico"))
+        self.sendEmailIcon = QIcon(os.path.join(ICONS_DIR, "send-email.ico"))
         self.closeFileIcon = QIcon(os.path.join(ICONS_DIR, "close.ico"))
         self.exitAppIcon = QIcon(os.path.join(ICONS_DIR, "exit.ico"))
         
@@ -144,6 +146,7 @@ class MarkdownEditor(QMainWindow):
         self.pasteIcon = QIcon(os.path.join(ICONS_DIR, "paste.ico"))
         self.undoIcon = QIcon(os.path.join(ICONS_DIR, "undo.ico"))
         self.redoIcon = QIcon(os.path.join(ICONS_DIR, "redo.ico"))
+        self.findIcon = QIcon(os.path.join(ICONS_DIR, "find.ico"))
 
         self.settingsIcon = QIcon(os.path.join(ICONS_DIR, "settings.ico"))
         self.englandFlagIcon = QIcon(os.path.join(ICONS_DIR, "england-flag.ico"))
@@ -163,7 +166,7 @@ class MarkdownEditor(QMainWindow):
         openFileAction.triggered.connect(self.open_file) 
         self.openFileAction = openFileAction
 
-        openDirectoryAction = QAction(self.tr("Open Directory..."))
+        openDirectoryAction = QAction(self.openDirectoryIcon, self.tr("Open Directory..."), self)
         openDirectoryAction.setStatusTip(self.tr("Open all markdown files in a directory"))
         openDirectoryAction.triggered.connect(self.open_directory) 
         self.openDirectoryAction = openDirectoryAction
@@ -190,9 +193,15 @@ class MarkdownEditor(QMainWindow):
         exportPdfAction.triggered.connect(self.export_to_pdf)
         self.exportPdfAction = exportPdfAction
 
-        self.exportAsAction = QAction(self.tr("Export As..."), self)
-        self.exportAsAction.setStatusTip(self.tr("Export to various formats like HTML, TXT"))
-        self.exportAsAction.triggered.connect(self.export_as)
+        exportAsAction = QAction(self.tr("Export As..."), self)
+        exportAsAction.setStatusTip(self.tr("Export to various formats like HTML, TXT"))
+        exportAsAction.triggered.connect(self.export_as)
+        self.exportAsAction = exportAsAction
+
+        sendEmailAction = QAction(self.sendEmailIcon, self.tr("Send..."), self)
+        sendEmailAction.setStatusTip(self.tr("Send content as email"))
+        sendEmailAction.triggered.connect(self.send_by_email)
+        self.sendEmailAction = sendEmailAction
 
         closeFileAction = QAction(self.closeFileIcon, self.tr("Close"), self)
         closeFileAction.setShortcut("Ctrl+W")
@@ -244,7 +253,7 @@ class MarkdownEditor(QMainWindow):
         redoAction.triggered.connect(self.redo_text)
         self.redoAction = redoAction
 
-        findReplaceAction = QAction(self.tr("Find && Replace..."), self)
+        findReplaceAction = QAction(self.findIcon, self.tr("Find && Replace..."), self)
         findReplaceAction.setShortcut("Ctrl+F")
         findReplaceAction.triggered.connect(self.show_find_replace_dialog)
         self.findReplaceAction = findReplaceAction
@@ -279,7 +288,7 @@ class MarkdownEditor(QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(self.exportPdfAction)
         fileMenu.addAction(self.exportAsAction)
-
+        fileMenu.addAction(self.sendEmailAction)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAppAction)
 
@@ -635,6 +644,30 @@ class MarkdownEditor(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, self.tr("Error Exporting File"), str(e))
 
+    def send_by_email(self):
+
+        editor = self._activeTextEdit()
+        if not editor:
+            self.statusBar().showMessage(self.tr("No active document to send."), 3000)
+            return
+        
+        subject = self.editorTabWidget.tabText(self.editorTabWidget.currentIndex()).rstrip("*")
+        body = editor.toPlainText()
+
+        try:
+            # Make characters suitable for the URL (example: make spaces %20)
+            encoded_subject = urllib.parse.quote(subject)
+            encoded_body = urllib.parse.quote(body)
+        except Exception as e:
+            self.statusBar().showMessage(self.tr(f"Error encoding text: {e}"), 3000)
+            return
+
+        mailto_url = f"mailto:?subject={encoded_subject}&body={encoded_body}"
+
+        if not QDesktopServices.openUrl(QUrl(mailto_url)):
+            self.statusBar().showMessage(self.tr("Could not open default email client."), 3000)
+        else:
+            self.statusBar().showMessage(self.tr("Sending content to email client..."), 3000)
 
     def close_file(self) -> bool:
         
