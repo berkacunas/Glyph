@@ -1,0 +1,26 @@
+QDockWidget::title {
+    background-color: #3498DB;
+    color: #d8d8d8;
+    padding: 4px;
+    border: 1;
+}
+
+QTreeView {
+    background-color: #252526; /* Koyu gri (VS Code Explorer BG) */
+    color: #CCCCCC; /* Açık gri metin */
+    border: none; /* Çerçeveyi kaldır */
+}
+
+QTreeView::item:selected {
+    background-color: #0078D7; /* Mavi (Windows seçimi) */
+    color: #FFFFFF; /* Seçili metin beyaz */
+}
+
+QTreeView::item:hover {
+    background-color: #2A2D2E;
+}
+
+QTabWidget::pane[is_empty="true"] {
+    background-color: #F0F0F0;
+    border-top: 1px solid #C0C0C0;
+}
