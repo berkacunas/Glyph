@@ -10,6 +10,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 
 import markdown
 import pymdownx.emoji
+import bleach
 
 from .dialogs.FindReplaceDialog import FindReplaceDialog
 from .SettingsDialog import SettingsDialog
@@ -17,6 +18,34 @@ from .SettingsDialog import SettingsDialog
 ICONS_DIR = os.path.join(os.path.dirname(__file__), "assets", "icons")
 
 class MarkdownEditor(QMainWindow):
+
+    MARKDOWN_EXTENSIONS = [
+        'fenced_code',      # code blocks. ex. ```python ... ```
+        'codehilite',       # adds syntax highlighting (requires pygments package)
+        'admonition',       # !!! note block
+        'tables',           # tables
+        'toc',              # table of contents. use it with [TOC] placeholder
+        'def_list',         # syntax for definition lists
+        'attr_list',        # attribute lists to generated HTML
+        'sane_lists',       # enables list items with multiple paragraphs
+        'pymdownx.emoji',   # pymdownx package
+        'footnotes'
+    ]
+
+    MARKDOWN_EXTENSION_CONFIGS = {
+        'pymdownx.emoji': { 
+            'emoji_index': pymdownx.emoji.gemoji,
+            'emoji_generator': pymdownx.emoji.to_alt,
+            "alt": 'html_entity',
+            "options": {
+                "attributes": {
+                    "align": "absmiddle",
+                    "height": "20px",
+                    "width": "20px"
+                }
+            }
+        }
+    }
 
     def __init__(self):
 
@@ -26,35 +55,7 @@ class MarkdownEditor(QMainWindow):
         css_file_path = os.path.join(self.project_root_dir, "assets", "css", "main.css")
         self.css_file_url = QUrl.fromLocalFile(css_file_path).toString()
 
-        markdown_extensions = [
-            'fenced_code',      # code blocks. ex. ```python ... ```
-            'codehilite',       # adds syntax highlighting (requires pygments package)
-            'admonition',       # !!! note block
-            'tables',           # tables
-            'toc',              # table of contents. use it with [TOC] placeholder
-            'def_list',         # syntax for definition lists
-            'attr_list',        # attribute lists to generated HTML
-            'sane_lists',       # enables list items with multiple paragraphs
-            'pymdownx.emoji',   # pymdownx package
-            'footnotes'
-        ]
-
-        markdown_extension_configs = {
-            'pymdownx.emoji': { 
-                'emoji_index': pymdownx.emoji.gemoji,
-                'emoji_generator': pymdownx.emoji.to_alt,
-                "alt": 'html_entity',
-                "options": {
-                    "attributes": {
-                        "align": "absmiddle",
-                        "height": "20px",
-                        "width": "20px"
-                    }
-                }
-            }
-        }
-
-        self.markdown = markdown.Markdown(extensions=markdown_extensions, extension_configs=markdown_extension_configs)
+        self.markdown = markdown.Markdown(extensions=self.MARKDOWN_EXTENSIONS, extension_configs=self.MARKDOWN_EXTENSION_CONFIGS)
         self.editor_content_changed = False
         self.current_file_path = None
         self.is_model_set = False
@@ -189,8 +190,12 @@ class MarkdownEditor(QMainWindow):
         exportPdfAction.triggered.connect(self.export_to_pdf)
         self.exportPdfAction = exportPdfAction
 
+        self.exportAsAction = QAction(self.tr("Export As..."), self)
+        self.exportAsAction.setStatusTip(self.tr("Export to various formats like HTML, TXT"))
+        self.exportAsAction.triggered.connect(self.export_as)
+
         closeFileAction = QAction(self.closeFileIcon, self.tr("Close"), self)
-        # closeFileAction.setShortcut("Ctrl+W")
+        closeFileAction.setShortcut("Ctrl+W")
         closeFileAction.setStatusTip(self.tr("Close file"))
         closeFileAction.triggered.connect(self.close_file) 
         self.closeFileAction = closeFileAction
@@ -204,7 +209,7 @@ class MarkdownEditor(QMainWindow):
         self.closeAllTabsAction = closeAllTabsAction
 
         exitAppAction = QAction(self.exitAppIcon, self.tr("E&xit Glyph"), self)
-        exitAppAction.setShortcut("Ctrl+W")
+        exitAppAction.setShortcut("Ctrl+Q")
         exitAppAction.setStatusTip(self.tr("Exit Glyph"))
         exitAppAction.triggered.connect(self.exit_app) 
         self.exitAppAction = exitAppAction
@@ -273,6 +278,8 @@ class MarkdownEditor(QMainWindow):
         fileMenu.addAction(self.saveAllFileAction)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exportPdfAction)
+        fileMenu.addAction(self.exportAsAction)
+
         fileMenu.addSeparator()
         fileMenu.addAction(self.exitAppAction)
 
@@ -576,6 +583,58 @@ class MarkdownEditor(QMainWindow):
         
         self.md_viewer.page().printToPdf(file_path)
         self.statusBar().showMessage(self.tr(f"Exported to PDF: {os.path.basename(file_path)}"), 3000)
+
+    def export_as(self):
+
+        editor = self._activeTextEdit()
+        if not editor:
+            self.statusBar().showMessage(self.tr("No active document to export."), 3000)
+            return
+        
+        filters = (
+            f"{self.tr('XHTML Document (*.xhtml *.html)')};;"
+            f"{self.tr('Markdown Document (*.md)')};;"
+            f"{self.tr('Plain Text (*.txt)')}"
+        )
+
+        # 2. 'getSaveFileName' bize dosya yolunu VE seçilen filtreyi döndürür
+        file_path, selected_filter = QFileDialog.getSaveFileName(
+            self, 
+            self.tr("Export As"), 
+            self.editorTabWidget.tabText(self.editorTabWidget.currentIndex()).rsplit('.', 1)[0], 
+            filters
+        )
+
+        if not file_path:
+            return
+        
+        content_to_write = ""
+
+        if '(*.md)' in selected_filter:
+            content_to_write = editor.toPlainText()
+
+        elif '(*.txt)' in selected_filter:
+            html_content = self.markdown.convert(editor.toPlainText())
+            content_to_write = bleach.clean(html_content, strip=True, tags=[])
+
+        elif '(*.xhtml *.html)' in selected_filter:
+            md_xhtml = markdown.Markdown(
+                extensions=self.MARKDOWN_EXTENSIONS,
+                extension_configs=self.MARKDOWN_EXTENSION_CONFIGS,
+                output_format='xhtml'
+            )
+            content_to_write = md_xhtml.convert(editor.toPlainText())
+        
+        else:
+            # An unknown situation (should not exist)
+            return
+        
+        try:
+            self._write_file(file_path, content_to_write)
+            self.statusBar().showMessage(self.tr(f"Successfully exported to {os.path.basename(file_path)}"), 3000)
+        except Exception as e:
+            QMessageBox.critical(self, self.tr("Error Exporting File"), str(e))
+
 
     def close_file(self) -> bool:
         
