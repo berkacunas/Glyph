@@ -132,6 +132,8 @@ class MarkdownEditor(QMainWindow):
         self.openFileIcon = QIcon(os.path.join(ICONS_DIR, "open.ico"))
         self.saveFileIcon = QIcon(os.path.join(ICONS_DIR, "save.ico"))
         self.saveAsFileIcon = QIcon(os.path.join(ICONS_DIR, "saveas.ico"))
+        self.saveAllFileIcon = QIcon(os.path.join(ICONS_DIR, "saveall.ico"))
+
         self.pdfIcon = QIcon(os.path.join(ICONS_DIR, "pdf.ico"))
         self.closeFileIcon = QIcon(os.path.join(ICONS_DIR, "close.ico"))
         self.exitAppIcon = QIcon(os.path.join(ICONS_DIR, "exit.ico"))
@@ -168,14 +170,19 @@ class MarkdownEditor(QMainWindow):
         saveFileAction = QAction(self.saveFileIcon, self.tr("&Save"), self)
         saveFileAction.setShortcut("Ctrl+S")
         saveFileAction.setStatusTip(self.tr("Save file"))
-        saveFileAction.triggered.connect(self.save_file) 
+        saveFileAction.triggered.connect(self.trigger_save_active_file) 
         self.saveFileAction = saveFileAction
 
         saveAsFileAction = QAction(self.saveAsFileIcon, self.tr("Save &As"), self)
         saveAsFileAction.setShortcut("Ctrl+Alt+S")
         saveAsFileAction.setStatusTip(self.tr("Save file as..."))
-        saveAsFileAction.triggered.connect(self.saveas_file) 
+        saveAsFileAction.triggered.connect(self.trigger_saveas_active_file) 
         self.saveAsFileAction = saveAsFileAction
+
+        saveAllFileAction = QAction(self.saveAllFileIcon, self.tr("Save All"), self)
+        saveAllFileAction.setStatusTip(self.tr("Save all files"))
+        saveAllFileAction.triggered.connect(self.saveall_file)
+        self.saveAllFileAction = saveAllFileAction
 
         exportPdfAction = QAction(self.pdfIcon, self.tr("Export to PDF..."), self)
         exportPdfAction.setStatusTip(self.tr("Export content to PDF file"))
@@ -263,6 +270,7 @@ class MarkdownEditor(QMainWindow):
         fileMenu.addSeparator()
         fileMenu.addAction(self.saveFileAction)
         fileMenu.addAction(self.saveAsFileAction)
+        fileMenu.addAction(self.saveAllFileAction)
         fileMenu.addSeparator()
         fileMenu.addAction(self.exportPdfAction)
         fileMenu.addSeparator()
@@ -296,6 +304,7 @@ class MarkdownEditor(QMainWindow):
         fileToolbar.addSeparator()
         fileToolbar.addAction(self.saveFileAction)
         fileToolbar.addAction(self.saveAsFileAction)
+        fileToolbar.addAction(self.saveAllFileAction)
         fileToolbar.addSeparator()
         fileToolbar.addAction(self.exportPdfAction)
         
@@ -429,46 +438,44 @@ class MarkdownEditor(QMainWindow):
 
             self.statusBar().showMessage(message, 3000)
 
-    def save_file(self) -> bool:
-        
-        md_editor = self._activeTextEdit()
+    def save_file(self, md_editor: QTextEdit, tab_index: int) -> bool:
+
         if not md_editor:
             return False
         
         is_changed = md_editor.property("is_changed")
         file_path = md_editor.property("file_path")
-
+        
         if not is_changed:
-            self.statusBar().showMessage(self.tr("No changes to save."), 2000)
             return True
         
         if not file_path:
-            return self.saveas_file()
+            return self.saveas_file(md_editor, tab_index)
 
         try:
             self._write_file(file_path, md_editor.toPlainText())
-
             md_editor.setProperty("is_changed", False)
-            
+
             # Remove '*' from tab title.
-            current_index = self.editorTabWidget.currentIndex()
-            tab_title = self.editorTabWidget.tabText(current_index).rstrip('*')
-            self.editorTabWidget.setTabText(current_index, tab_title)
+            tab_title = self.editorTabWidget.tabText(tab_index).rstrip('*')
+            self.editorTabWidget.setTabText(tab_index, tab_title)
             
-            self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(file_path)}")
+            # If it is the active tab, update the main window title
+            if self.editorTabWidget.currentIndex() == tab_index:
+                self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(file_path)}")
+
             self.statusBar().showMessage(self.tr(f"File saved: {os.path.basename(file_path)}"), 3000)
             return True
 
         except Exception as e:
             QMessageBox.critical(self, self.tr("Error Saving File"),
-                self.tr(f"Could not save file '{self.current_file_path}'.\nError: {str(e)}")
+                self.tr(f"Could not save file '{self.file_path}'.\nError: {str(e)}")
             )
             self.statusBar().showMessage(self.tr("Failed to save file."), 3000)
             return False
 
-    def saveas_file(self):
+    def saveas_file(self, md_editor: QTextEdit, tab_index: int) -> bool:
         
-        md_editor = self._activeTextEdit()
         if not md_editor:
             return False
         
@@ -489,15 +496,11 @@ class MarkdownEditor(QMainWindow):
         if filePath:
             try:
                 self._write_file(filePath, md_editor.toPlainText())
-
                 md_editor.setProperty("file_path", filePath) 
                 md_editor.setProperty("is_changed", False)
 
-                current_index = self.editorTabWidget.currentIndex()
-                self.editorTabWidget.setTabText(current_index, os.path.basename(filePath))
-
-                self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(filePath)}")
-                self.statusBar().showMessage(self.tr(f"File saved in: {os.path.basename(filePath)}"), 3000)
+                self.editorTabWidget.setTabText(tab_index, os.path.basename(filePath))
+                self.statusBar().showMessage(self.tr(f"File saved as: {os.path.basename(filePath)}"), 3000)
                 return True
 
             except Exception as e:
@@ -506,10 +509,51 @@ class MarkdownEditor(QMainWindow):
                     self.tr("Error Saving File"),
                     self.tr(f"Could not save file '{filePath}'.\nError: {str(e)}")
                 )
-                self.statusBar().showMessage(self.tr("Failed to save file."), 3000)
                 return False
         else:
             self.statusBar().showMessage(self.tr("File save cancelled."), 2000)
+            return False
+        
+    def saveall_file(self):
+
+        tab_count = self.editorTabWidget.count()
+        if tab_count == 0:
+            self.statusBar().showMessage(self.tr("No active document to save."), 3000)
+            return
+
+        changed_files_count = 0
+        saved_files_count = 0
+
+        for i in range(tab_count):
+            editor = self.editorTabWidget.widget(i)
+
+            if editor.property("is_changed"):
+                changed_files_count += 1
+
+                if self.save_file(editor, i):
+                    saved_files_count += 1
+                else:
+                    self.statusBar().showMessage(self.tr("Save All operation cancelled."), 3000)
+                    return
+        
+        if changed_files_count == 0:
+            self.statusBar().showMessage(self.tr("No changes to save."), 3000)
+        elif saved_files_count == changed_files_count:
+            self.statusBar().showMessage(self.tr(f"All {saved_files_count} modified files saved successfully."), 3000)
+
+    def trigger_save_active_file(self):
+        
+        editor = self._activeTextEdit()
+        index = self.editorTabWidget.currentIndex()
+        if editor:
+            self.save_file(editor, index)
+
+    def trigger_saveas_active_file(self):
+
+        editor = self._activeTextEdit()
+        index = self.editorTabWidget.currentIndex()
+        if editor:
+            self.saveas_file(editor, index)
 
     def export_to_pdf(self):
 
