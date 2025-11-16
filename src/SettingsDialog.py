@@ -2,7 +2,8 @@ import os
 import json
 
 from PyQt6.QtCore import QSettings, QCoreApplication, QStandardPaths
-from PyQt6.QtWidgets import QDialog, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QMessageBox, QFileDialog, QGroupBox, QPushButton
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QDialog, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QMessageBox, QFileDialog, QGroupBox, QPushButton, QFontDialog
 
 class SettingsDialog(QDialog):
 
@@ -34,6 +35,21 @@ class SettingsDialog(QDialog):
         languageHLayout.addWidget(self.languageComboBox)
         languageGroupBox.setLayout(languageHLayout)
         mainLayout.addWidget(languageGroupBox)
+
+        fontGroupBox = QGroupBox(QCoreApplication.translate("SettingsDialog", "Editor Font"))
+        fontVLayout = QVBoxLayout()
+        
+        self.fontPreviewLabel = QLabel(self.tr("Current Font: N/A"))
+        self.fontPreviewLabel.setWordWrap(True) # If the font name is long, it will fit
+        
+        self.fontChangeButton = QPushButton(self.tr("Change Editor Font..."))
+        self.fontChangeButton.clicked.connect(self.open_font_dialog)
+
+        fontVLayout.addWidget(self.fontPreviewLabel)
+        fontVLayout.addWidget(self.fontChangeButton)
+        fontGroupBox.setLayout(fontVLayout)
+        mainLayout.addWidget(fontGroupBox)
+
 
         backupGroupBox = QGroupBox(QCoreApplication.translate("SettingsDialog", "Backup / Restore Settings"))
         backupVLayout = QVBoxLayout()
@@ -68,15 +84,20 @@ class SettingsDialog(QDialog):
         index = self.languageComboBox.findData(current_lang)
         if index != -1:
             self.languageComboBox.setCurrentIndex(index)
+
+        default_font = QFont("Calibri", 12)
+        self.current_editor_font = self.settings.value("editor/font", default_font, type=QFont)
+        self._update_font_preview_label()
+
         # ... Settings to be added can be loaded here ..
 
     def saveSettings(self):
 
-            selected_lang_code = self.languageComboBox.currentData()
-            self.settings.setValue("language/current", selected_lang_code)
-            # ... Settings to be added can be saved here ...
-
-            self.settings.sync()
+        selected_lang_code = self.languageComboBox.currentData()
+        self.settings.setValue("language/current", selected_lang_code)
+        self.settings.setValue("editor/font", self.current_editor_font)
+        # ... Settings to be added can be saved here ...
+        self.settings.sync()
         
     def exportSettings(self):
         
@@ -164,3 +185,18 @@ class SettingsDialog(QDialog):
                     QCoreApplication.translate("SettingsDialog", "Import Failed"),
                     QCoreApplication.translate("SettingsDialog", f"Failed to import settings.\nError: {str(e)}")
                 )
+
+    def open_font_dialog(self):
+
+        font, ok = QFontDialog.getFont(self.current_editor_font, self, self.tr("Select Editor Font"))
+
+        if ok:
+            self.current_editor_font = font
+            self._update_font_preview_label()
+
+    def _update_font_preview_label(self):
+
+        font = self.current_editor_font
+        self.fontPreviewLabel.setText(f"{font.family()}, {font.pointSize()}pt")
+        self.fontPreviewLabel.setFont(font)
+
