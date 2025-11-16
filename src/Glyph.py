@@ -2,8 +2,8 @@ import os
 import glob
 import urllib.parse
 
-from PyQt6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint
-from PyQt6.QtGui import QAction, QIcon, QFileSystemModel, QTextCursor, QTextDocument, QDesktopServices
+from PyQt6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint, QSettings
+from PyQt6.QtGui import QAction, QIcon, QFont, QFileSystemModel, QTextCursor, QTextDocument, QDesktopServices
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QTextEdit, \
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu
 
@@ -367,11 +367,10 @@ class MarkdownEditor(QMainWindow):
         dialog = SettingsDialog(self)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             dialog.saveSettings()
-            QMessageBox.information(
-                self,
-                self.tr("Settings Saved"),
-                self.tr("Settings have been saved. Please restart the application for some changes (like language) to take full effect.")
-            )
+            self.statusBar().showMessage(self.tr("Settings saved."), 3000)
+
+            self._apply_font_settings_to_all_tabs()
+            self.update_viewer()
         else:
             self.statusBar().showMessage(self.tr("Settings cancelled."), 2000)
 
@@ -978,6 +977,11 @@ class MarkdownEditor(QMainWindow):
         md_editor = QTextEdit()
         md_editor.textChanged.connect(self.on_editor_content_changed)
         
+        settings = QSettings()
+        default_font = QFont("Calibri", 12)
+        editor_font = settings.value("editor/font", default_font, type=QFont)
+        md_editor.setFont(editor_font)
+
         md_editor.setProperty("file_path", file_path)
         md_editor.setProperty("is_changed", False)
 
@@ -992,6 +996,13 @@ class MarkdownEditor(QMainWindow):
         if not md_editor:
             self.md_viewer.setHtml("")
             return
+        
+        settings = QSettings()
+        default_font = QFont("Calibri", 12)
+        viewer_font = settings.value("editor/font", default_font, type=QFont)
+        
+        font_family = viewer_font.family()
+        font_size_pt = viewer_font.pointSize()
 
         markdown_text = md_editor.toPlainText()
         html_body = self.markdown.convert(markdown_text)
@@ -1002,6 +1013,12 @@ class MarkdownEditor(QMainWindow):
             <head>
                 <meta charset="utf-8">
                 <link rel="stylesheet" href="{self.css_file_url}">
+                <style>
+                body {{
+                    font-family: "{font_family}";
+                    font-size: {font_size_pt}pt;
+                }}
+            </style>
             </head>
             <body>
                 {html_body}
@@ -1080,3 +1097,15 @@ class MarkdownEditor(QMainWindow):
             if isinstance(editor, QTextEdit) and editor.property("is_changed"):
                 return True
         return False
+    
+    def _apply_font_settings_to_all_tabs(self):
+        """
+        Kaydedilen yeni font ayarını TÃœM açık editör sekmelerine uygular.
+        """
+        settings = QSettings()
+        new_font = settings.value("editor/font", QFont("Calibri", 12), type=QFont)
+        
+        for i in range(self.editorTabWidget.count()):
+            editor = self.editorTabWidget.widget(i)
+            if isinstance(editor, QTextEdit):
+                editor.setFont(new_font)
