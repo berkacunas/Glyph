@@ -88,14 +88,14 @@ Katkıda bulunmak için lütfen `main` dalından yeni bir dal (branch) açın ve
 
 ## ⚖️ Lisans
 
-`Glyph`, **Çifte Lisanslama (Dual-Licensing)** modeli altında sunulmaktadır.
+Glyph, **GNU General Public License v3.0 (GPL-3.0)** altında lisanslanmış ücretsiz ve açık kaynaklı bir yazılımdır. Bu yazılımı, lisans koşullarına uymak kaydıyla özgürce kullanabilir, değiştirebilir ve dağıtabilirsiniz. Detaylar için `LICENSE` dosyasına bakınız.
 
-### 1\. Açık Kaynak Lisansı
+---
 
-Bu proje, açık kaynaklı projelerde ve kişisel kullanımda **GNU General Public License v3.0 (GPL-3.0)** koşulları altında ücretsiz olarak kullanılabilir. Detaylar için `LICENSE` dosyasına bakın.
+## ❤️ Projeyi Destekleyin
 
-### 2\. Ticari Lisans
+Glyph, bağımsız bir geliştirici tarafından geliştirilmekte ve sürdürülmektedir. Eğer bu aracı faydalı bulduysanız ve geliştirmeyi desteklemek (veya sadece hazır derlenmiş `.exe` için teşekkür etmek) isterseniz, lütfen bağış yapmayı düşünün!
 
-"Glyph"i, GPL-3.0'ın "bulaşıcı" kısıtlamaları olmaksızın **kapalı kaynaklı (proprietary)** bir ticari ürüne entegre etmek için alternatif bir **Ticari Lisans** gereklidir.
-
-Ticari lisanslama koşulları ve fiyatlandırma için lütfen **[...BURAYA E-POSTA ADRESİNİZİ YAZIN...]** üzerinden iletişime geçin.
+* [**GitHub Sponsors**](https://github.com/sponsors/berkacunas) (Yakında)
+* [**Buy Me a Coffee / Ko-fi**](...) (Yakında)
+* **Bu repoya yıldız verin!** ⭐ Görünürlüğe çok yardımcı olur.

@@ -88,14 +88,14 @@ To contribute, please branch from `main` and submit a Pull Request.
 
 ## ⚖️ License
 
-`Glyph` is offered under a **Dual-Licensing** model.
+Glyph is free and open-source software licensed under the **GNU General Public License v3.0 (GPL-3.0)**. You are free to use, modify, and distribute this software in compliance with the license. See the `LICENSE` file for details.
 
-### 1\. Open Source License
+---
 
-For open-source projects and personal use, Glyph is available under the **GNU General Public License v3.0 (GPL-3.0)**. See the `LICENSE` file for details.
+## ❤️ Support the Project
 
-### 2\. Commercial License
+Glyph is developed and maintained by an independent developer. If you find this tool useful and want to support its continued development (or simply want to say thanks for the pre-built `.exe`), please consider making a donation!
 
-A separate Commercial License is required to use Glyph in a closed-source, proprietary commercial product without being bound by the "viral" terms of the GPL.
-
-For commercial licensing terms and pricing, please contact: **[YOUR EMAIL ADDRESS HERE]**
+* [**GitHub Sponsors**](https://github.com/sponsors/berkacunas) (Coming Soon)
+* [**Buy Me a Coffee / Ko-fi**](...) (Coming Soon)
+* **Star this repo!** ⭐ It helps visibility.

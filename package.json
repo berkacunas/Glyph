@@ -1,7 +1,8 @@
 {
   "name": "glyph",
+  "private": true,
   "version": "1.0.0",
-  "description": "* readme",
+  "description": "A modern, multi-tab Markdown editor built with PySide6.",
   "main": "index.js",
   "scripts": {
     "test": "pytest",
@@ -11,8 +12,17 @@
     "type": "git",
     "url": "git+https://github.com/berkacunas/Glyph.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "markdown",
+    "editor",
+    "pyside6",
+    "python",
+    "qt",
+    "live-preview",
+    "desktop-application",
+    "wysiwyg"
+  ],
+  "author": "Berk Acunas <info@deponessoft.com> (https://github.com/berkacunas)",
   "license": "GPL-3.0",
   "type": "commonjs",
   "bugs": {
