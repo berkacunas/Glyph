@@ -94,8 +94,8 @@ class MarkdownEditor(QMainWindow):
         self.findReplaceDialog = None
         
         # Help Menu (Singleton) Attributes
-        self.readme_dialog = None # Diyalog penceresini tutar
-        self.readme_viewer = None # AĞIR QWebEngineView nesnesini tutar
+        self.readme_dialog = None
+        self.readme_viewer = None
 
         self.setupUi()
         self.createIcons()
@@ -121,6 +121,8 @@ class MarkdownEditor(QMainWindow):
         self.fileTreeDock = QDockWidget(self.tr("Explorer"), self)
         self.fileTreeDock.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
         self.fileTreeDock.setWidget(self.fileSysTreeView)
+        self.fileTreeDock.visibilityChanged.connect(self.on_fileTreeDock_visibility_changed)
+
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.fileTreeDock)
 
         self.md_viewer = QWebEngineView()
@@ -163,6 +165,7 @@ class MarkdownEditor(QMainWindow):
         self.findIcon = QIcon(os.path.join(ICONS_DIR, "find.ico"))
 
         self.previewIcon = QIcon(os.path.join(ICONS_DIR, "eye.ico"))
+        self.monkeyIcon = QIcon(os.path.join(ICONS_DIR, "monkey.ico"))
 
         self.settingsIcon = QIcon(os.path.join(ICONS_DIR, "settings.ico"))
         self.englandFlagIcon = QIcon(os.path.join(ICONS_DIR, "england-flag.ico"))
@@ -170,6 +173,8 @@ class MarkdownEditor(QMainWindow):
 
         self.readmeIcon = QIcon(os.path.join(ICONS_DIR, "readme.ico")) 
         self.aboutIcon = QIcon(os.path.join(ICONS_DIR, "about.ico"))
+
+        self.handWithPenIcon = QIcon(os.path.join(ICONS_DIR, "hand-with-pen.ico"))
 
     def createActions(self):
 
@@ -285,6 +290,12 @@ class MarkdownEditor(QMainWindow):
         togglePreviewAction.toggled.connect(self.toggle_preview_panel)
         self.togglePreviewAction = togglePreviewAction
 
+        self.toggleExplorerAction = QAction(self.monkeyIcon, self.tr("Toggle Explorer"), self)
+        self.toggleExplorerAction.setStatusTip(self.tr("Show/Hide the Explorer pane"))
+        self.toggleExplorerAction.setCheckable(True)
+        self.toggleExplorerAction.setChecked(True) 
+        self.toggleExplorerAction.toggled.connect(self.fileTreeDock.setVisible)
+
         enLangAction = QAction(self.englandFlagIcon, self.tr("English"), self)
         enLangAction.triggered.connect(lambda: self.change_language('en'))
         self.enLangAction = enLangAction
@@ -338,7 +349,11 @@ class MarkdownEditor(QMainWindow):
         editMenu.addSeparator()
         editMenu.addAction(self.undoAction)
         editMenu.addAction(self.redoAction)
-        
+
+        viewMenu = menuBar.addMenu(self.tr("View"))
+        viewMenu.addAction(self.toggleExplorerAction)
+        viewMenu.addAction(self.togglePreviewAction) # Önizleme de buraya ait        
+
         toolsMenu = menuBar.addMenu(self.tr("Tools"))
         toolsMenu.addAction(self.settingsAction)
 
@@ -1064,6 +1079,10 @@ class MarkdownEditor(QMainWindow):
 
         self._open_file_in_new_tab(file_path)
     
+    def on_fileTreeDock_visibility_changed(self, checked: bool):
+
+        self.toggleExplorerAction.setChecked(checked)
+
     def show_editorTab_context_menu(self, pos: QPoint):
         
         widget = self.sender()
