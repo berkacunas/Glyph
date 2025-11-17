@@ -8,6 +8,9 @@ from src.Glyph import MarkdownEditor
 
 if __name__ == "__main__":
 
+    os.environ["QT_OPENGL"] = "software"
+    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu"
+    
     app = QApplication(sys.argv)
 
     QCoreApplication.setOrganizationName("Deponessoft") # Kendi şirket adınızı veya geliştirici adınızı yazın

@@ -1078,7 +1078,9 @@ class MarkdownEditor(QMainWindow):
     
     def on_fileTreeDock_visibility_changed(self, checked: bool):
 
+        self.toggleExplorerAction.blockSignals(True)
         self.toggleExplorerAction.setChecked(checked)
+        self.toggleExplorerAction.blockSignals(False)
 
     def show_editorTab_context_menu(self, pos: QPoint):
         
