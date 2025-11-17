@@ -103,6 +103,15 @@ class MarkdownEditor(QMainWindow):
         self.createMenuBar()
         self.createToolBar()
         self.createContextMenu()
+
+        self.setWindowIcon(self.appIcon)
+        QApplication.instance().setWindowIcon(self.appIcon)
+
+        if os.name == 'nt':
+            import ctypes
+            myappid = 'berkacunas.glyph.editor.1.0.0' # Rastgele benzersiz bir ID
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
         self.statusBar().showMessage(self.tr("Ready"))
 
     def setupUi(self):
@@ -175,6 +184,7 @@ class MarkdownEditor(QMainWindow):
         self.aboutIcon = QIcon(os.path.join(self.icons_dir, "about.ico"))
 
         self.handWithPenIcon = QIcon(os.path.join(self.icons_dir, "hand-with-pen.ico"))
+        self.appIcon = QIcon(os.path.join(self.icons_dir, "markdown.ico"))
 
     def createActions(self):
 
@@ -357,10 +367,11 @@ class MarkdownEditor(QMainWindow):
         toolsMenu = menuBar.addMenu(self.tr("Tools"))
         toolsMenu.addAction(self.settingsAction)
 
-        languageMenu = menuBar.addMenu(self.tr("Language"))
-        selectLanguageMenu = languageMenu.addMenu(self.tr("Select"))
-        selectLanguageMenu.addAction(self.enLangAction)
-        selectLanguageMenu.addAction(self.trLangAction)
+        # TEMPORARILY HIDDEN (delayed to v1.1)
+        # languageMenu = menuBar.addMenu(self.tr("Language"))
+        # selectLanguageMenu = languageMenu.addMenu(self.tr("Select"))
+        # selectLanguageMenu.addAction(self.enLangAction)
+        # selectLanguageMenu.addAction(self.trLangAction)
 
         helpMenu = menuBar.addMenu(self.tr("Help"))
         helpMenu.addAction(self.showReadmeAction)
@@ -880,12 +891,14 @@ class MarkdownEditor(QMainWindow):
         self.findReplaceDialog.activateWindow()
 
     def show_about_dialog(self):
-
+        """
+        Displays the 'About' dialog with updated info.
+        """
         about_text = f"""
             <h3>{self.tr("Glyph")} v1.0</h3>
             <p>{self.tr("A modern Markdown Editor built with PySide6.")}</p>
-            <p>{self.tr("Developed by:")} Berk Acunaş</p>
-            <p>{self.tr("License:")} {self.tr("GPL-v3 & Commercial")}</p>
+            <p>{self.tr("Created by:")} Berk Acunaş</p>
+            <p>{self.tr("License:")} GPL v3.0 (Free & Open Source)</p>
             <p>—</p>
             <p>{self.tr("This application uses the following core components:")}</p>
             <ul>

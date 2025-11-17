@@ -9,7 +9,6 @@ from src.Glyph import MarkdownEditor
 if __name__ == "__main__":
 
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("./assets/icons/markdown.ico"))
 
     QCoreApplication.setOrganizationName("Deponessoft") # Kendi şirket adınızı veya geliştirici adınızı yazın
     QCoreApplication.setApplicationName("Glyph")
