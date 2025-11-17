@@ -449,21 +449,6 @@ class MarkdownEditor(QMainWindow):
 
     def new_file(self):
 
-        activeEditor = self._activeTextEdit()
-        if activeEditor and activeEditor.property("is_changed"):
-            response = QMessageBox.warning(self,
-                self.tr(u"Unsaved Changes"),
-                self.tr(u"There are unsaved changes in the current file. Do you want to save them before creating a new file?"),
-                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
-            )
-
-            if response == QMessageBox.StandardButton.Save:
-                if not self.save_file():
-                    return
-
-            elif response == QMessageBox.StandardButton.Cancel:
-                return
-
         self._createEditor()
         self.md_viewer.setHtml("")
         
