@@ -4,7 +4,7 @@ import glob
 import urllib.parse
 
 from PySide6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint, QSettings
-from PySide6.QtGui import QAction, QIcon, QFont, QTextCursor, QTextDocument, QDesktopServices
+from PySide6.QtGui import QAction, QIcon, QFont, QTextCursor, QTextDocument, QDesktopServices, QFontMetricsF
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QDockWidget, QTextEdit, QFileSystemModel, \
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu, QSizePolicy
 
@@ -1151,6 +1151,11 @@ class MarkdownEditor(QMainWindow):
         editor_font = settings.value("editor/font", default_font, type=QFont)
         md_editor.setFont(editor_font)
 
+        # Set tab length to 4 spaces.
+        metrics = QFontMetricsF(editor_font)
+        space_width = metrics.horizontalAdvance(' ')
+        md_editor.setTabStopDistance(space_width * 4)
+
         md_editor.setProperty("file_path", file_path)
         md_editor.setProperty("is_changed", False)
 
@@ -1268,16 +1273,18 @@ class MarkdownEditor(QMainWindow):
         return False
     
     def _apply_font_settings_to_all_tabs(self):
-        """
-        Kaydedilen yeni font ayarını TÃœM açık editör sekmelerine uygular.
-        """
+        
         settings = QSettings()
         new_font = settings.value("editor/font", QFont("Calibri", 12), type=QFont)
         
+        metrics = QFontMetricsF(new_font)
+        new_tab_width = metrics.horizontalAdvance(' ') * 4
+
         for i in range(self.editorTabWidget.count()):
             editor = self.editorTabWidget.widget(i)
             if isinstance(editor, QTextEdit):
                 editor.setFont(new_font)
+                editor.setTabStopDistance(new_tab_width)
 
     def get_resource_path(self, relative_path):
         """
