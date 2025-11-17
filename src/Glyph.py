@@ -2,12 +2,12 @@ import os
 import glob
 import urllib.parse
 
-from PyQt6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint, QSettings
-from PyQt6.QtGui import QAction, QIcon, QFont, QFileSystemModel, QTextCursor, QTextDocument, QDesktopServices
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QDockWidget, QTextEdit, \
+from PySide6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint, QSettings
+from PySide6.QtGui import QAction, QIcon, QFont, QTextCursor, QTextDocument, QDesktopServices
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QDockWidget, QTextEdit, QFileSystemModel, \
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu, QSizePolicy
 
-from PyQt6.QtWebEngineWidgets import QWebEngineView 
+from PySide6.QtWebEngineWidgets import QWebEngineView 
 
 import markdown
 import pymdownx.emoji
@@ -883,14 +883,14 @@ class MarkdownEditor(QMainWindow):
 
         about_text = f"""
             <h3>{self.tr("Glyph")} v1.0</h3>
-            <p>{self.tr("A modern Markdown Editor built with PyQt6.")}</p>
+            <p>{self.tr("A modern Markdown Editor built with PySide6.")}</p>
             <p>{self.tr("Developed by:")} Berk Acunaş</p>
             <p>{self.tr("License:")} {self.tr("GPL-v3 & Commercial")}</p>
             <p>—</p>
             <p>{self.tr("This application uses the following core components:")}</p>
             <ul>
                 <li>Python</li>
-                <li>PyQt6</li>
+                <li>PySide6</li>
                 <li>QWebEngine (Chromium)</li>
                 <li>python-markdown</li>
                 <li>Pygments</li>

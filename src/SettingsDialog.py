@@ -1,9 +1,9 @@
 import os
 import json
 
-from PyQt6.QtCore import QSettings, QCoreApplication, QStandardPaths
-from PyQt6.QtGui import QFont
-from PyQt6.QtWidgets import QDialog, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QMessageBox, QFileDialog, QGroupBox, QPushButton, QFontDialog
+from PySide6.QtCore import QSettings, QCoreApplication, QStandardPaths
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QDialog, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QMessageBox, QFileDialog, QGroupBox, QPushButton, QFontDialog
 
 class SettingsDialog(QDialog):
 

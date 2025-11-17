@@ -4,7 +4,7 @@
 [](https://www.gnu.org/licenses/gpl-3.0)
 [](https://www.google.com/search?q=https://github.com/berkacunas/Glyph/releases)
 
-Python ve PyQt6 ile güçlendirilmiş, `QWebEngineView` tabanlı canlı önizleme özelliğine sahip, modern ve çok sekmeli bir Markdown editörü.
+Python ve PySide6 ile güçlendirilmiş, `QWebEngineView` tabanlı canlı önizleme özelliğine sahip, modern ve çok sekmeli bir Markdown editörü.
 
 Bu proje, yerel (offline) çalışan, hızlı ve gelişmiş Markdown eklentilerini destekleyen güçlü bir yazma aracı sağlamak amacıyla geliştirilmiştir.
 

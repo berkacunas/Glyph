@@ -1,11 +1,11 @@
-from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QCheckBox, QVBoxLayout, QHBoxLayout, QGridLayout
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QCheckBox, QVBoxLayout, QHBoxLayout, QGridLayout
 
 class FindReplaceDialog(QDialog):
 
-    findNextSignal = pyqtSignal(str, bool, bool)  # (text, case_sensitive, whole_words)
-    replaceSignal = pyqtSignal(str, str, bool, bool)
-    replaceAllSignal = pyqtSignal(str, str, bool, bool)
+    findNextSignal = Signal(str, bool, bool)  # (text, case_sensitive, whole_words)
+    replaceSignal = Signal(str, str, bool, bool)
+    replaceAllSignal = Signal(str, str, bool, bool)
 
     def __init__(self, parent=None):
 
