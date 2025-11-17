@@ -1,3 +1,4 @@
+import sys
 import os
 import glob
 import urllib.parse
@@ -15,8 +16,6 @@ import bleach
 
 from .dialogs.FindReplaceDialog import FindReplaceDialog
 from .SettingsDialog import SettingsDialog
-
-ICONS_DIR = os.path.join(os.path.dirname(__file__), "assets", "icons")
 
 class MarkdownEditor(QMainWindow):
 
@@ -52,11 +51,12 @@ class MarkdownEditor(QMainWindow):
 
         super().__init__()
 
-        self.src_root_dir = os.path.dirname(__file__)
-        css_file_path = os.path.join(self.src_root_dir, "assets", "css", "main.css")
+        self.icons_dir = self.get_resource_path(os.path.join("assets", "icons"))
+
+        css_file_path = self.get_resource_path(os.path.join("assets", "css", "main.css"))
         self.css_file_url = QUrl.fromLocalFile(css_file_path).toString()
 
-        qss_file_path = os.path.join(self.src_root_dir, "assets", "css", "glyph_style.qss")
+        qss_file_path = self.get_resource_path(os.path.join("assets", "css", "glyph_style.qss"))
         try:
             with open(qss_file_path, "r", encoding="utf-8") as f:
                 qss_content = f.read()
@@ -146,35 +146,35 @@ class MarkdownEditor(QMainWindow):
       
     def createIcons(self):
 
-        self.newFileIcon = QIcon(os.path.join(ICONS_DIR, "new.ico"))
-        self.openFileIcon = QIcon(os.path.join(ICONS_DIR, "open.ico"))
-        self.openDirectoryIcon = QIcon(os.path.join(ICONS_DIR, "open-directory.ico"))
-        self.saveFileIcon = QIcon(os.path.join(ICONS_DIR, "save.ico"))
-        self.saveAsFileIcon = QIcon(os.path.join(ICONS_DIR, "saveas.ico"))
-        self.saveAllFileIcon = QIcon(os.path.join(ICONS_DIR, "saveall.ico"))
-        self.pdfIcon = QIcon(os.path.join(ICONS_DIR, "pdf.ico"))
-        self.sendEmailIcon = QIcon(os.path.join(ICONS_DIR, "send-email.ico"))
-        self.closeFileIcon = QIcon(os.path.join(ICONS_DIR, "close.ico"))
-        self.exitAppIcon = QIcon(os.path.join(ICONS_DIR, "exit.ico"))
+        self.newFileIcon = QIcon(os.path.join(self.icons_dir, "new.ico"))
+        self.openFileIcon = QIcon(os.path.join(self.icons_dir, "open.ico"))
+        self.openDirectoryIcon = QIcon(os.path.join(self.icons_dir, "open-directory.ico"))
+        self.saveFileIcon = QIcon(os.path.join(self.icons_dir, "save.ico"))
+        self.saveAsFileIcon = QIcon(os.path.join(self.icons_dir, "saveas.ico"))
+        self.saveAllFileIcon = QIcon(os.path.join(self.icons_dir, "saveall.ico"))
+        self.pdfIcon = QIcon(os.path.join(self.icons_dir, "pdf.ico"))
+        self.sendEmailIcon = QIcon(os.path.join(self.icons_dir, "send-email.ico"))
+        self.closeFileIcon = QIcon(os.path.join(self.icons_dir, "close.ico"))
+        self.exitAppIcon = QIcon(os.path.join(self.icons_dir, "exit.ico"))
         
-        self.cutIcon = QIcon(os.path.join(ICONS_DIR, "cut.ico"))
-        self.copyIcon = QIcon(os.path.join(ICONS_DIR, "copy.ico"))
-        self.pasteIcon = QIcon(os.path.join(ICONS_DIR, "paste.ico"))
-        self.undoIcon = QIcon(os.path.join(ICONS_DIR, "undo.ico"))
-        self.redoIcon = QIcon(os.path.join(ICONS_DIR, "redo.ico"))
-        self.findIcon = QIcon(os.path.join(ICONS_DIR, "find.ico"))
+        self.cutIcon = QIcon(os.path.join(self.icons_dir, "cut.ico"))
+        self.copyIcon = QIcon(os.path.join(self.icons_dir, "copy.ico"))
+        self.pasteIcon = QIcon(os.path.join(self.icons_dir, "paste.ico"))
+        self.undoIcon = QIcon(os.path.join(self.icons_dir, "undo.ico"))
+        self.redoIcon = QIcon(os.path.join(self.icons_dir, "redo.ico"))
+        self.findIcon = QIcon(os.path.join(self.icons_dir, "find.ico"))
 
-        self.previewIcon = QIcon(os.path.join(ICONS_DIR, "eye.ico"))
-        self.monkeyIcon = QIcon(os.path.join(ICONS_DIR, "monkey.ico"))
+        self.previewIcon = QIcon(os.path.join(self.icons_dir, "eye.ico"))
+        self.monkeyIcon = QIcon(os.path.join(self.icons_dir, "monkey.ico"))
 
-        self.settingsIcon = QIcon(os.path.join(ICONS_DIR, "settings.ico"))
-        self.englandFlagIcon = QIcon(os.path.join(ICONS_DIR, "england-flag.ico"))
-        self.turkeyFlagIcon = QIcon(os.path.join(ICONS_DIR, "turkey-flag.ico"))
+        self.settingsIcon = QIcon(os.path.join(self.icons_dir, "settings.ico"))
+        self.englandFlagIcon = QIcon(os.path.join(self.icons_dir, "england-flag.ico"))
+        self.turkeyFlagIcon = QIcon(os.path.join(self.icons_dir, "turkey-flag.ico"))
 
-        self.readmeIcon = QIcon(os.path.join(ICONS_DIR, "readme.ico")) 
-        self.aboutIcon = QIcon(os.path.join(ICONS_DIR, "about.ico"))
+        self.readmeIcon = QIcon(os.path.join(self.icons_dir, "readme.ico")) 
+        self.aboutIcon = QIcon(os.path.join(self.icons_dir, "about.ico"))
 
-        self.handWithPenIcon = QIcon(os.path.join(ICONS_DIR, "hand-with-pen.ico"))
+        self.handWithPenIcon = QIcon(os.path.join(self.icons_dir, "hand-with-pen.ico"))
 
     def createActions(self):
 
@@ -900,8 +900,6 @@ class MarkdownEditor(QMainWindow):
 
     def show_readme_dialog(self):
         
-        project_root_dir = os.path.dirname(self.src_root_dir)
-
         settings = QSettings()
         current_lang = settings.value("language/current", "en", type=str)
 
@@ -909,7 +907,7 @@ class MarkdownEditor(QMainWindow):
         if current_lang == "tr":
             readme_filename = "README.tr.md"
 
-        readme_path = os.path.join(project_root_dir, readme_filename)
+        readme_path = self.get_resource_path(readme_filename)
         try:
             with open(readme_path, 'r', encoding='utf-8') as f:
                 readme_markdown_text = f.read()
@@ -944,7 +942,8 @@ class MarkdownEditor(QMainWindow):
         
         # We set 'baseUrl' to the project root directory so that relative images in the 
         # # README (if any) will work.
-        base_url = QUrl.fromLocalFile(self.src_root_dir)
+        root_path = self.get_resource_path("")
+        base_url = QUrl.fromLocalFile(root_path)
         self.readme_viewer.setHtml(html_full_document, baseUrl=base_url)
             
         self.readme_dialog.show()
@@ -1279,3 +1278,18 @@ class MarkdownEditor(QMainWindow):
             editor = self.editorTabWidget.widget(i)
             if isinstance(editor, QTextEdit):
                 editor.setFont(new_font)
+
+    def get_resource_path(self, relative_path):
+        """
+        A helper method that finds the correct file paths both in the 
+        development environment and when packaged with PyInstaller.
+        """
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller ile paketlenmişse geçici klasörden al
+            base_path = sys._MEIPASS
+        else:
+            # Normal çalışıyorsa proje kök dizininden al
+            # (src klasörünün bir üstü)
+            base_path = os.path.dirname(os.path.abspath(__file__))
+
+        return os.path.join(base_path, relative_path)
