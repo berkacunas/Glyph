@@ -145,9 +145,6 @@ class MarkdownEditor(QMainWindow):
         self.mainContentSplitter.addWidget(self.editorTabWidget)
         self.mainContentSplitter.addWidget(self.md_viewer)
 
-        # self.mainContentSplitter.setCollapsible(0, False)
-        # self.mainContentSplitter.setCollapsible(1, True)
-
         self.mainContentSplitter.setStretchFactor(0, 1)
         self.mainContentSplitter.setStretchFactor(1, 1)
         
@@ -362,7 +359,7 @@ class MarkdownEditor(QMainWindow):
 
         viewMenu = menuBar.addMenu(self.tr("View"))
         viewMenu.addAction(self.toggleExplorerAction)
-        viewMenu.addAction(self.togglePreviewAction) # Önizleme de buraya ait        
+        viewMenu.addAction(self.togglePreviewAction)    
 
         toolsMenu = menuBar.addMenu(self.tr("Tools"))
         toolsMenu.addAction(self.settingsAction)
@@ -663,7 +660,6 @@ class MarkdownEditor(QMainWindow):
             f"{self.tr('Plain Text (*.txt)')}"
         )
 
-        # 2. 'getSaveFileName' bize dosya yolunu VE seçilen filtreyi döndürür
         file_path, selected_filter = QFileDialog.getSaveFileName(
             self, 
             self.tr("Export As"), 
@@ -763,10 +759,8 @@ class MarkdownEditor(QMainWindow):
                 return
         except Exception:
             return
-        
 
         while self.editorTabWidget.count() > 1:
-            
             keep_index = self.editorTabWidget.indexOf(keep_widget)
 
             current_index = 0
@@ -833,34 +827,31 @@ class MarkdownEditor(QMainWindow):
 
     def toggle_preview_panel(self, checked: bool):
         
-        # 1. Splitter'ın mevcut boyutlarını al (Sadece Editör ve Görüntüleyici)
-        #    örn: [1000, 0]
         sizes = self.mainContentSplitter.sizes()
-        
         editor_size = sizes[0]
         viewer_size = sizes[1]
 
         if checked:
-            # --- GÖRÜNTÜLEYİCİYİ AÇ ---
+            # Open the viewer
             if viewer_size > 0: 
-                return # Zaten açıksa dokunma
+                return # Don't touch if it's already open
 
-            total_space = editor_size # Editörün tüm alanını al
+            total_space = editor_size # Take the entire editor area
             new_editor_size = total_space // 2
             new_viewer_size = total_space - new_editor_size
             
-            # Sadece 2 elemanlı yeni boyutları emret
+            # Order new sizes with only 2 elements
             self.mainContentSplitter.setSizes([new_editor_size, new_viewer_size])
             self.md_viewer.show()
             
         else:
-            # --- GÖRÜNTÜLEYİCİYİ KAPAT ---
+            # close the viewer
             if viewer_size == 0: 
-                return # Zaten kapalıysa dokunma
+                return # Don't touch if it's already close
                 
             total_space = editor_size + viewer_size
             
-            # Tüm alanı Editöre ver
+            # Give all space to Editor
             self.mainContentSplitter.setSizes([total_space, 0])
 
     def show_find_replace_dialog(self):
