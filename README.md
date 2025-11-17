@@ -4,7 +4,7 @@
 [](https://www.gnu.org/licenses/gpl-3.0)
 [](https://www.google.com/search?q=https://github.com/berkacunas/Glyph/releases)
 
-A modern, multi-tab Markdown editor built with PyQt6, featuring a live preview powered by `QWebEngineView`.
+A modern, multi-tab Markdown editor built with PySide6, featuring a live preview powered by `QWebEngineView`.
 
 This project was developed to provide a robust, fast, and offline-first writing tool that supports advanced Markdown extensions.
 

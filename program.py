@@ -1,8 +1,8 @@
 import os
 import sys
-from PyQt6.QtCore import Qt, QCoreApplication, QTranslator, QLocale, QSettings
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QIcon, QFont
+from PySide6.QtCore import Qt, QCoreApplication, QTranslator, QLocale, QSettings
+from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QIcon, QFont
 
 from src.Glyph import MarkdownEditor
 
