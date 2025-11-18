@@ -8,7 +8,7 @@ A modern, multi-tab Markdown editor built with PySide6, featuring a live preview
 
 This project was developed to provide a robust, fast, and offline-first writing tool that supports advanced Markdown extensions.
 
-`[Screenshot of the Glyph editor interface here]`
+![Glyph Editor Screenshot](src/assets/screenshots/screenshot_v1.png)
 
 -----
 
