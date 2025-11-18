@@ -86,7 +86,21 @@ class SettingsDialog(QDialog):
             self.languageComboBox.setCurrentIndex(index)
 
         default_font = QFont("Calibri", 12)
-        self.current_editor_font = self.settings.value("editor/font", default_font, type=QFont)
+        stored_value = self.settings.value("editor/font", default_font)
+
+        # TYPE SAFETY CHECK:
+        # When migrating from PyQt6 to PySide6 (or due to config corruption),
+        # 'stored_value' might be returned as a string (e.g., "Calibri,12,-1...")
+        # instead of a QFont object, causing a crash when .family() is called.
+        #
+        # This check ensures we only use the stored value if it is a valid QFont.
+        # If it's a string (legacy/invalid data), we fallback to 'default_font'.
+        # Once the settings are saved again by this app, the type will be corrected.
+        if isinstance(stored_value, QFont):
+            self.current_editor_font = stored_value
+        else:
+            self.current_editor_font = default_font
+
         self._update_font_preview_label()
 
         # ... Settings to be added can be loaded here ..
@@ -188,7 +202,7 @@ class SettingsDialog(QDialog):
 
     def open_font_dialog(self):
 
-        font, ok = QFontDialog.getFont(self.current_editor_font, self, self.tr("Select Editor Font"))
+        ok, font = QFontDialog.getFont(self.current_editor_font, self, self.tr("Select Editor Font"))
 
         if ok:
             self.current_editor_font = font

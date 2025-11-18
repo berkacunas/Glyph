@@ -8,6 +8,7 @@ from PySide6.QtGui import QAction, QIcon, QFont, QTextCursor, QTextDocument, QDe
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QDockWidget, QTextEdit, QFileSystemModel, \
                             QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu, QSizePolicy
 
+from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView 
 
 import markdown
@@ -135,6 +136,12 @@ class MarkdownEditor(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.fileTreeDock)
 
         self.md_viewer = QWebEngineView()
+        # Security settings for image display from web.
+        settings = self.md_viewer.settings()
+        # 1. Allow local content (file://) to access internet (https://)
+        settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
+        # 2. Allow local content to access other local files
+        settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
 
         self.editorTabWidget = QTabWidget()
         self.editorTabWidget.currentChanged.connect(self.on_editorTab_changed)

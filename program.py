@@ -13,11 +13,11 @@ if __name__ == "__main__":
     
     app = QApplication(sys.argv)
 
-    QCoreApplication.setOrganizationName("Deponessoft") # Kendi şirket adınızı veya geliştirici adınızı yazın
+    QCoreApplication.setOrganizationName("Deponessoft")
     QCoreApplication.setApplicationName("Glyph")
 
     settings = QSettings()
-    last_lang = settings.value("language/current", QLocale().system().name().split('_')[0], type=str) # Varsayılan olarak sistem dili veya "en"
+    last_lang = settings.value("language/current", QLocale().system().name().split('_')[0], type=str)
 
     translator = QTranslator()
     
@@ -29,4 +29,3 @@ if __name__ == "__main__":
     mainWindow = MarkdownEditor()
     mainWindow.show()
     sys.exit(app.exec())
-
