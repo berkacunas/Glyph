@@ -1,8 +1,10 @@
 # Glyph
 
-[](https://www.google.com/search?q=https://github.com/berkacunas/Glyph/actions/workflows/release.yml)
-[](https://www.gnu.org/licenses/gpl-3.0)
-[](https://www.google.com/search?q=https://github.com/berkacunas/Glyph/releases)
+[![CI/CD](https://github.com/berkacunas/Glyph/actions/workflows/release.yml/badge.svg)](https://github.com/berkacunas/Glyph/actions/workflows/release.yml)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL_v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Latest Release](https://img.shields.io/github/v/release/berkacunas/Glyph)](https://github.com/berkacunas/Glyph/releases)
+
+**📥 Download Now:** [**Get the latest Windows Installer (.exe)**](https://github.com/berkacunas/Glyph/releases/latest)
 
 A modern, multi-tab Markdown editor built with PySide6, featuring a live preview powered by `QWebEngineView`.
 
