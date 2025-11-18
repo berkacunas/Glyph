@@ -8,7 +8,7 @@ Python ve PySide6 ile güçlendirilmiş, `QWebEngineView` tabanlı canlı önizl
 
 Bu proje, yerel (offline) çalışan, hızlı ve gelişmiş Markdown eklentilerini destekleyen güçlü bir yazma aracı sağlamak amacıyla geliştirilmiştir.
 
-`[Glyph arayüzünün ekran görüntüsünü buraya ekleyin]`
+![Glyph Editor Screenshot](src/assets/screenshots/screenshot_v1.png)
 
 -----
 
