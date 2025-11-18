@@ -97,5 +97,7 @@ Glyph, **GNU General Public License v3.0 (GPL-3.0)** altında lisanslanmış üc
 Glyph, bağımsız bir geliştirici tarafından geliştirilmekte ve sürdürülmektedir. Eğer bu aracı faydalı bulduysanız ve geliştirmeyi desteklemek (veya sadece hazır derlenmiş `.exe` için teşekkür etmek) isterseniz, lütfen bağış yapmayı düşünün!
 
 * [**GitHub Sponsors**](https://github.com/sponsors/berkacunas) (Yakında)
-* [**Buy Me a Coffee / Ko-fi**](...) (Yakında)
+
+<a href="https://www.buymeacoffee.com/depones" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 * **Bu repoya yıldız verin!** ⭐ Görünürlüğe çok yardımcı olur.
