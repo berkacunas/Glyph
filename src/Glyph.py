@@ -899,11 +899,15 @@ class MarkdownEditor(QMainWindow):
         settings = QSettings()
         current_lang = settings.value("language/current", "en", type=str)
 
-        readme_filename = "README.md" # Varsayılan (İngilizce)
-        if current_lang == "tr":
-            readme_filename = "README.tr.md"
+        readme_filename = "README.tr.md" if current_lang == "tr" else "README.md"
+            
+        if getattr(sys, 'frozen', False):
+            target_path = readme_filename
+        else:
+            target_path = os.path.join("..", readme_filename)
+        
+        readme_path = self.get_resource_path(target_path)
 
-        readme_path = self.get_resource_path(readme_filename)
         try:
             with open(readme_path, 'r', encoding='utf-8') as f:
                 readme_markdown_text = f.read()
@@ -932,6 +936,9 @@ class MarkdownEditor(QMainWindow):
 
             # Create and save heavy QWebEngineView object once
             self.readme_viewer = QWebEngineView()
+            settings = self.readme_viewer.settings()
+            settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessRemoteUrls, True)
+            settings.setAttribute(QWebEngineSettings.WebAttribute.LocalContentCanAccessFileUrls, True)
 
             dialog_layout.addWidget(self.readme_viewer)
             self.readme_dialog.setLayout(dialog_layout)
