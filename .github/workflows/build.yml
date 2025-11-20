@@ -36,7 +36,7 @@ jobs:
       - name: Package as Tarball
         run: |
           cd dist
-          tar -czvf Glyph_v${{ github.event.release.tag_name }}_Linux.tar.gz Glyph/
+          tar -czvf Glyph_${{ github.event.release.tag_name }}_Linux.tar.gz Glyph/
 
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
