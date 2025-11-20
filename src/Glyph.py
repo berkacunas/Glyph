@@ -6,7 +6,7 @@ import urllib.parse
 from PySide6.QtCore import Qt, QDir, QUrl, QModelIndex, QPoint, QSettings
 from PySide6.QtGui import QAction, QIcon, QFont, QTextCursor, QTextDocument, QDesktopServices, QFontMetricsF
 from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QDockWidget, QTextEdit, QFileSystemModel, \
-                            QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu, QSizePolicy
+                            QSplitter, QMessageBox, QFileDialog, QTreeView, QDialog, QTabWidget, QMenu, QSizePolicy, QLabel
 
 from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView 
@@ -156,7 +156,12 @@ class MarkdownEditor(QMainWindow):
         self.mainContentSplitter.setStretchFactor(1, 1)
         
         self.md_viewer.hide()
-      
+        
+        self.statsLabel = QLabel("0 lines, 0 words, 0 characters")
+        self.statsLabel.setStyleSheet("padding-right: 10px;")
+        self.statusBar().addPermanentWidget(self.statsLabel)
+        
+   
     def createIcons(self):
 
         self.newFileIcon = QIcon(os.path.join(self.icons_dir, "new.ico"))
@@ -438,6 +443,7 @@ class MarkdownEditor(QMainWindow):
             self.statusBar().showMessage(self.tr("Unsaved changes..."), 2000)
 
         self.update_viewer()
+        self.update_statistics()
 
     def open_settings_dialog(self):
 
@@ -1111,12 +1117,15 @@ class MarkdownEditor(QMainWindow):
         else:
             self.update_viewer()
             md_editor = self._activeTextEdit()
+            
             file_path = md_editor.property("file_path")
             
             if file_path:
                 self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(file_path)}")
             else:
                 self.setWindowTitle(self.tr("Glyph"))
+            
+            self.update_statistics()
             
             self._set_editor_actions_enabled(True)
             self.editorTabWidget.setProperty("is_empty", False)
@@ -1305,3 +1314,22 @@ class MarkdownEditor(QMainWindow):
             base_path = os.path.dirname(os.path.abspath(__file__))
 
         return os.path.join(base_path, relative_path)
+    
+    def update_statistics(self):
+        
+        md_editor = self._activeTextEdit()
+        if not md_editor:
+            self.statsLabel.setText("")
+            return
+        
+        text = md_editor.toPlainText()
+        char_count = len(text)
+        word_count = len(text.strip().split()) if text.strip() else 0
+        line_count = text.count('\n') + 1 if text else 0
+
+        self.statsLabel.setText(self.tr(f"{line_count} lines, {word_count} words, {char_count} chars"))
+        
+        
+        
+    
+    
