@@ -36,7 +36,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['src\\assets\\icons\\markdown.ico'],
+    icon=['src/assets/icons/markdown.ico'],
 )
 coll = COLLECT(
     exe,
