@@ -1,0 +1,44 @@
+name: Build and Upload Assets
+
+# Tetikleyici: Yeni bir Release yayınlandığında çalış
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux:
+    name: Build Linux Binary
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12' 
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          # Necessary Linux libraries for PySide6/Qt
+          sudo apt-get install -y libegl1 libopengl0 libxcb-cursor0 
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller Glyph.spec
+
+      - name: Package as Tarball
+        run: |
+          cd dist
+          tar -czvf Glyph_v${{ github.event.release.tag_name }}_Linux.tar.gz Glyph/
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/Glyph_*_Linux.tar.gz
