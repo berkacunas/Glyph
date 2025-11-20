@@ -21,7 +21,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Tüm git geçmişini çek (versiyon hesaplamak için şart)
+          fetch-depth: 0 
       
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -42,4 +42,4 @@ jobs:
       - name: Run semantic-release
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub'ın otomatik sağladığı anahtar
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_GLYPH }}
