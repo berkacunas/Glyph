@@ -1,6 +1,5 @@
 name: Build and Upload Assets
 
-# Tetikleyici: Yeni bir Release yayınlandığında çalış
 on:
   release:
     types: [published]
@@ -42,3 +41,42 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/Glyph_*_Linux.tar.gz
+
+  build-windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        # Windows'ta 'pip' komutu yeterlidir
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build EXE with PyInstaller
+        run: pyinstaller Glyph.spec
+
+      - name: Build Installer with Inno Setup
+        uses: Minionguyjosh/inno-setup-action@v1.2.2
+        with:
+          path: Glyph_Installer.iss
+
+      - name: Rename Installer
+        # Oluşan dosyanın adını GitHub standardımıza (vX.X.X_Windows) uyduralım
+        # Inno Setup çıktıyı 'dist/installer/' altına atıyordu.
+        run: |
+          cd dist/installer
+          mv Glyph_Setup_*.exe Glyph_${{ github.event.release.tag_name }}_Windows_Setup.exe
+
+      - name: Upload Windows Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/installer/Glyph_*_Windows_Setup.exe
