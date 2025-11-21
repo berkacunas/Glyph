@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/berkacunas/Glyph/compare/v1.1.1...v1.2.0) (2025-11-21)
+
+
+### Features
+
+* **ci:** add windows build job with inno setup to workflow ([c502503](https://github.com/berkacunas/Glyph/commit/c5025031a297b0dbe1b75979dd8eae9f3d1b32f9))
+
 ## [1.1.1](https://github.com/berkacunas/Glyph/compare/v1.1.0...v1.1.1) (2025-11-20)
 
 
