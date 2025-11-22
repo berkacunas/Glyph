@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/berkacunas/Glyph/compare/v1.2.0...v1.2.1) (2025-11-22)
+
+
+### Bug Fixes
+
+* **ci:** use bash shell for windows build steps to prevent powershell errors ([93e50fc](https://github.com/berkacunas/Glyph/commit/93e50fcc23bee2b0700abafc08d43f360426fb6f))
+
 # [1.2.0](https://github.com/berkacunas/Glyph/compare/v1.1.1...v1.2.0) (2025-11-21)
 
 
