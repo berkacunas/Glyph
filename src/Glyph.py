@@ -17,6 +17,7 @@ import bleach
 
 from .dialogs.FindReplaceDialog import FindReplaceDialog
 from .SettingsDialog import SettingsDialog
+from ._version import __version__
 
 class MarkdownEditor(QMainWindow):
 
@@ -884,7 +885,7 @@ class MarkdownEditor(QMainWindow):
         Displays the 'About' dialog with updated info.
         """
         about_text = f"""
-            <h3>{self.tr("Glyph")} v1.0</h3>
+            <h3>{self.tr("Glyph")} v{__version__}</h3>
             <p>{self.tr("A modern Markdown Editor built with PySide6.")}</p>
             <p>{self.tr("Created by:")} Berk Acunaş</p>
             <p>{self.tr("License:")} GPL v3.0 (Free & Open Source)</p>
