@@ -33,21 +33,31 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^7.1.0",
     "@semantic-release/git": "^10.0.1",
     "@semantic-release/github": "^12.0.2",
     "husky": "^9.1.7",
     "semantic-release": "^25.0.2"
   },
   "release": {
-    "branches": ["main"],
+    "branches": [
+      "main"
+    ],
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
       "@semantic-release/changelog",
       [
+        "@semantic-release/exec",
+        {
+          "prepareCmd": "echo \"__version__ = '${nextRelease.version}'\" > src/_version.py"
+        }
+      ],
+      
+      [
         "@semantic-release/git",
         {
-          "assets": ["CHANGELOG.md", "package.json"],
+          "assets": ["CHANGELOG.md", "package.json", "src/_version.py"], 
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }
       ],
