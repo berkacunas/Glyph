@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/berkacunas/Glyph/compare/v1.2.2...v1.2.3) (2025-11-22)
+
+
+### Bug Fixes
+
+* **installer:** point Run section to executable ([432241f](https://github.com/berkacunas/Glyph/commit/432241fadcec5640d8a131686aaddcf2a5871ec2))
+
 ## [1.2.2](https://github.com/berkacunas/Glyph/compare/v1.2.1...v1.2.2) (2025-11-22)
 
 
