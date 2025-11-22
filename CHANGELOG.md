@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/berkacunas/Glyph/compare/v1.2.1...v1.2.2) (2025-11-22)
+
+
+### Bug Fixes
+
+* **ci:** replace deprecated inno setup action with local inno setup ([7ed922f](https://github.com/berkacunas/Glyph/commit/7ed922fdcc0e31aa54e9035b556c1d83c7a777f5))
+
 ## [1.2.1](https://github.com/berkacunas/Glyph/compare/v1.2.0...v1.2.1) (2025-11-22)
 
 
