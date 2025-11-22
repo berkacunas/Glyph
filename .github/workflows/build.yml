@@ -56,12 +56,13 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        # Windows'ta 'pip' komutu yeterlidir
+        shell: bash 
         run: |
           pip install -r requirements.txt
           pip install pyinstaller
 
       - name: Build EXE with PyInstaller
+        shell: bash
         run: pyinstaller Glyph.spec
 
       - name: Build Installer with Inno Setup
@@ -69,11 +70,18 @@ jobs:
         with:
           path: Glyph_Installer.iss
 
+      - name: Check Build Output (Debugging)
+        shell: bash
+        run: |
+          echo "Listing dist directory..."
+          ls -R dist/
+          # Helps to see in the Actions logs whether Inno Setup created the file.
+
       - name: Rename Installer
-        # Oluşan dosyanın adını GitHub standardımıza (vX.X.X_Windows) uyduralım
-        # Inno Setup çıktıyı 'dist/installer/' altına atıyordu.
+        shell: bash  # <-- EKLENDİ: mv komutunun doğru çalışması için kritik
         run: |
           cd dist/installer
+          # Setup dosyasının adını GitHub etiketine (tag) göre değiştir
           mv Glyph_Setup_*.exe Glyph_${{ github.event.release.tag_name }}_Windows_Setup.exe
 
       - name: Upload Windows Asset
