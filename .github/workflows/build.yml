@@ -66,9 +66,9 @@ jobs:
         run: pyinstaller Glyph.spec
 
       - name: Build Installer with Inno Setup
-        uses: Minionguyjosh/inno-setup-action@v1.2.2
-        with:
-          path: Glyph_Installer.iss
+        run: choco install innosetup
+      - name: Compile Installer
+        run: "& 'C:\\Program Files (x86)\\Inno Setup 6\\ISCC.exe' Glyph_Installer.iss"
 
       - name: Check Build Output (Debugging)
         shell: bash
