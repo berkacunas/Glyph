@@ -40,4 +40,6 @@ dist/
 *.tmp
 *.bak
 
+.github/ISSUES/
+
 prog-notes/
