@@ -26,12 +26,18 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12' 
-          
+          python-version: '3.12'
+          cache: 'pip'  # Caches pip dependencies to speed up future runs
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libopengl0 libxcb-cursor0 libxkbcommon-x11-0
       - name: Install Python dependencies
         run: |
           pip install pytest
           pip install -r requirements.txt
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
