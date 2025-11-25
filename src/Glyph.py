@@ -15,9 +15,9 @@ import markdown
 import pymdownx.emoji
 import bleach
 
-from .dialogs.FindReplaceDialog import FindReplaceDialog
-from .SettingsDialog import SettingsDialog
-from ._version import __version__
+from src.FindReplaceDialog import FindReplaceDialog
+from src.SettingsDialog import SettingsDialog
+from src._version import __version__
 
 class MarkdownEditor(QMainWindow):
 
@@ -53,6 +53,7 @@ class MarkdownEditor(QMainWindow):
 
         super().__init__()
 
+        self.project_root_dir = os.path.dirname(__file__)
         self.icons_dir = self.get_resource_path(os.path.join("assets", "icons"))
 
         css_file_path = self.get_resource_path(os.path.join("assets", "css", "main.css"))
@@ -106,13 +107,13 @@ class MarkdownEditor(QMainWindow):
         self.createToolBar()
         self.createContextMenu()
 
-        self.setWindowIcon(self.appIcon)
-        QApplication.instance().setWindowIcon(self.appIcon)
-
         if os.name == 'nt':
             import ctypes
-            myappid = 'berkacunas.glyph.editor.1.0.0' # Rastgele benzersiz bir ID
+            myappid = 'deponesstudio.glyph.editor.1.0.0' # Random unique ID
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+            
+        self.setWindowIcon(self.appIcon)
+        QApplication.instance().setWindowIcon(self.appIcon)
 
         self.statusBar().showMessage(self.tr("Ready"))
 
@@ -162,7 +163,6 @@ class MarkdownEditor(QMainWindow):
         self.statsLabel.setStyleSheet("padding-right: 10px;")
         self.statusBar().addPermanentWidget(self.statsLabel)
         
-   
     def createIcons(self):
 
         self.newFileIcon = QIcon(os.path.join(self.icons_dir, "new.ico"))
