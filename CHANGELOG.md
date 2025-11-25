@@ -1,3 +1,16 @@
+## [1.2.4](https://github.com/berkacunas/Glyph/compare/v1.2.3...v1.2.4) (2025-11-25)
+
+
+### Bug Fixes
+
+* **ci:** add missing xcb libraries and pin ubuntu version for qt gui tests ([1628b23](https://github.com/berkacunas/Glyph/commit/1628b23d25680f9a0221bed37f74bafd0d365400))
+* **ci:** install project requirement dependencies in release workflow for tests ([46057bd](https://github.com/berkacunas/Glyph/commit/46057bd35d7957360dece31f5bffd8942d6c4251))
+* **ci:** install project requirements in release workflow for tests ([37cb0e0](https://github.com/berkacunas/Glyph/commit/37cb0e07b0fff3a71da6e69a6230e57ac2edbbff))
+* **ci:** install xvfb and pytest-xvfb to enable headless gui tests on linux ([515f55b](https://github.com/berkacunas/Glyph/commit/515f55b8fc36af41bbe88730be8129f31137ca9b))
+* **test:** add MockWebEngineView class ([c0807ea](https://github.com/berkacunas/Glyph/commit/c0807eabc74366d98e1d870cf732c0b16d04240a))
+* **test:** add MockWebEngineView class ([53c522e](https://github.com/berkacunas/Glyph/commit/53c522ed8269ce2af6cfd883deafc6a076f27101))
+* **ui:** resolve missing application icons in windows start menu and taskbar ([239fdaf](https://github.com/berkacunas/Glyph/commit/239fdaf054969cf231240187d0daaaabf2a365bc))
+
 ## [1.2.3](https://github.com/berkacunas/Glyph/compare/v1.2.2...v1.2.3) (2025-11-22)
 
 
