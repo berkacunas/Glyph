@@ -14,7 +14,43 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        # QML ve Quick (Biz sadece Widgets kullanıyoruz)
+        'PySide6.QtQml',
+        'PySide6.QtQuick',
+        'PySide6.QtQuickWidgets',
+        'PySide6.QtQuick3D',
+        
+        # 3D Motorları (İhtiyacımız yok)
+        'PySide6.Qt3DCore',
+        'PySide6.Qt3DInput',
+        'PySide6.Qt3DLogic',
+        'PySide6.Qt3DRender',
+        'PySide6.Qt3DExtras',
+        
+        # Diğer Gereksiz Modüller
+        'PySide6.QtDesigner',
+        'PySide6.QtHelp',
+        'PySide6.QtSensors',
+        'PySide6.QtSerialPort',
+        'PySide6.QtSql',
+        'PySide6.QtTest',
+        'PySide6.QtCharts',
+        'PySide6.QtDataVisualization',
+        'PySide6.QtMultimedia',
+        'PySide6.QtMultimediaWidgets',
+        'PySide6.QtNfc',
+        'PySide6.QtBluetooth',
+        'PySide6.QtLocation',
+        'PySide6.QtPositioning',
+        'PySide6.QtRemoteObjects',
+        'PySide6.QtScxml',
+        'PySide6.QtStateMachine',
+        'PySide6.QtXmlPatterns',
+        
+        # Tkinter (Python's default GUI. Useless with Qt)
+        'tkinter'
+    ],
     noarchive=False,
     optimize=0,
 )
