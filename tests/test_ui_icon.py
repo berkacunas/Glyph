@@ -4,7 +4,7 @@ import sys
 
 from unittest.mock import MagicMock
 
-from MockWebEngineView import MockWebEngineView
+from .MockWebEngineView import MockWebEngineView
 
 mock_widgets_module = MagicMock()
 mock_widgets_module.QWebEngineView = MockWebEngineView
