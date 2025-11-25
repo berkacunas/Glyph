@@ -4,7 +4,6 @@ import sys
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
-# Glyph modülünü import edebilmek için yol ayarı
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'src')))
 from Glyph import MarkdownEditor
 
