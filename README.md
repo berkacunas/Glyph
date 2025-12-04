@@ -106,7 +106,9 @@ Glyph is free and open-source software licensed under the **GNU General Public L
 
 Glyph is developed and maintained by an independent developer. If you find this tool useful and want to support its continued development (or simply want to say thanks for the pre-built `.exe`), please consider making a donation!
 
-* [**GitHub Sponsors**](https://github.com/sponsors/berkacunas) (Coming Soon)
+<a href="https://github.com/sponsors/berkacunas">
+  <img src="https://img.shields.io/badge/Sponsor-GitHub-pink?style=for-the-badge&logo=github-sponsors" height="50" alt="Sponsor on GitHub">
+</a>
 
 <a href="https://www.buymeacoffee.com/depones" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
