@@ -112,7 +112,5 @@ Glyph is developed and maintained by an independent developer. If you find this 
 
 <a href="https://www.buymeacoffee.com/depones" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
-* **Star this repo!** ⭐ It helps visibility.
-
 ---
 *Glyph is Copyright (C) 2025 Berk Acunaş, and is licensed under the GNU General Public License v3.0 (GPLv3). The full license text is available in the [LICENSE](LICENSE) file.*
