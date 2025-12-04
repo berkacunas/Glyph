@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/berkacunas/Glyph/compare/v1.2.4...v1.2.5) (2025-12-04)
+
+
+### Bug Fixes
+
+* **ui:** increase SettingsDialog fixed size to 400x300 to resolve Linux layout collapse (closes #X) ([8125bed](https://github.com/berkacunas/Glyph/commit/8125bed0ef9f44fff918cab1b897795889400b62)), closes [#X](https://github.com/berkacunas/Glyph/issues/X)
+
 ## [1.2.4](https://github.com/berkacunas/Glyph/compare/v1.2.3...v1.2.4) (2025-11-25)
 
 
