@@ -102,6 +102,18 @@ Glyph is free and open-source software licensed under the **GNU General Public L
 
 ---
 
+## 🙏 Credits & Attributions
+
+This project uses graphical assets from the following sources:
+
+* **Icons:**
+    * Some icons made by [Freepik](https://www.freepik.com) from [www.flaticon.com](https://www.flaticon.com/).
+    * Some icons by [Icons8](https://icons8.com).
+* **Emojis:**
+    * Emoji graphics provided by [Twemoji](https://twemoji.twitter.com/) (licensed under CC-BY 4.0).
+
+---
+
 ## ❤️ Support the Project
 
 Glyph is developed and maintained by an independent developer. If you find this tool useful and want to support its continued development (or simply want to say thanks for the pre-built `.exe`), please consider making a donation!
