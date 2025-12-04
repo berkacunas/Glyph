@@ -167,6 +167,8 @@ class MarkdownEditor(QMainWindow):
 
         self.newFileIcon = QIcon(os.path.join(self.icons_dir, "new.ico"))
         self.openFileIcon = QIcon(os.path.join(self.icons_dir, "open.ico"))
+        self.openReadOnlyIcon = QIcon(os.path.join(self.icons_dir, "readonly-file.ico"))
+        
         self.openDirectoryIcon = QIcon(os.path.join(self.icons_dir, "open-directory.ico"))
         self.saveFileIcon = QIcon(os.path.join(self.icons_dir, "save.ico"))
         self.saveAsFileIcon = QIcon(os.path.join(self.icons_dir, "saveas.ico"))
@@ -193,6 +195,7 @@ class MarkdownEditor(QMainWindow):
         self.readmeIcon = QIcon(os.path.join(self.icons_dir, "readme.ico")) 
         self.aboutIcon = QIcon(os.path.join(self.icons_dir, "about.ico"))
 
+        self.lockIcon = QIcon(os.path.join(self.icons_dir, "lock.ico"))
         self.handWithPenIcon = QIcon(os.path.join(self.icons_dir, "hand-with-pen.ico"))
         self.appIcon = QIcon(os.path.join(self.icons_dir, "markdown.ico"))
 
@@ -209,6 +212,11 @@ class MarkdownEditor(QMainWindow):
         openFileAction.setStatusTip(self.tr("Open file"))
         openFileAction.triggered.connect(self.open_file) 
         self.openFileAction = openFileAction
+        
+        openReadOnlyAction = QAction(self.openReadOnlyIcon, self.tr("Open Read-Only..."), self)
+        openReadOnlyAction.setStatusTip(self.tr("Open file in read-only mode"))
+        openReadOnlyAction.triggered.connect(self.open_file_read_only) 
+        self.openReadOnlyAction = openReadOnlyAction
 
         openDirectoryAction = QAction(self.openDirectoryIcon, self.tr("Open Directory..."), self)
         openDirectoryAction.setStatusTip(self.tr("Open all markdown files in a directory"))
@@ -347,6 +355,7 @@ class MarkdownEditor(QMainWindow):
         fileMenu = menuBar.addMenu(self.tr("File"))
         fileMenu.addAction(self.newFileAction)
         fileMenu.addAction(self.openFileAction)
+        fileMenu.addAction(self.openReadOnlyAction)
         fileMenu.addAction(self.openDirectoryAction)
         fileMenu.addAction(self.closeFileAction)
         fileMenu.addSeparator()
@@ -472,8 +481,7 @@ class MarkdownEditor(QMainWindow):
         active_editor = self._activeTextEdit()
         if active_editor and active_editor.property("is_changed"):
             response = QMessageBox.warning(self,
-                self.tr("Unsaved Changes"),
-                self.tr("There are unsaved changes in the current file. Do you want to save them before creating a new file?"), 
+                self.tr("Unsaved Changes"), self.tr("There are unsaved changes in the current file. Do you want to save them before creating a new file?"), 
                 QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
             )
             if response == QMessageBox.StandardButton.Save:
@@ -482,15 +490,30 @@ class MarkdownEditor(QMainWindow):
             elif response == QMessageBox.StandardButton.Cancel:
                 return
 
-        filePath, _ = QFileDialog.getOpenFileName(
-            self,
-            self.tr("Open Markdown File"),
-            ".",
-            self.tr("Markdown Files (*.md);;All Files (*)")
-        )
-
+        filePath, _ = QFileDialog.getOpenFileName(self, self.tr("Open Markdown File"), ".", self.tr("Markdown Files (*.md);;All Files (*)"))
         if filePath:
             self._open_file_in_new_tab(filePath)
+        else:
+            self.statusBar().showMessage(self.tr("File open cancelled."), 2000)
+
+    def open_file_read_only(self):
+        
+        active_editor = self._activeTextEdit()
+        if active_editor and active_editor.property("is_changed"):
+            response = QMessageBox.warning(self,
+                self.tr("Unsaved Changes"), self.tr("There are unsaved changes in the current file. Do you want to save them before creating a new file?"), 
+                QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
+            )
+            if response == QMessageBox.StandardButton.Save:
+                if not self.save_file():
+                    return
+            elif response == QMessageBox.StandardButton.Cancel:
+                return
+            
+        filePath, _ = QFileDialog.getOpenFileName(self, self.tr("Open File Read-Only"), ".", self.tr("Markdown Files (*.md);;All Files (*)"))
+        if filePath:
+            # İşte sihirli dokunuş: force_readonly=True
+            self._open_file_in_new_tab(filePath, force_readonly=True)
         else:
             self.statusBar().showMessage(self.tr("File open cancelled."), 2000)
 
@@ -1121,6 +1144,11 @@ class MarkdownEditor(QMainWindow):
             md_editor = self._activeTextEdit()
             
             file_path = md_editor.property("file_path")
+            is_read_only = md_editor.property("is_read_only")
+            
+            self.saveFileAction.setEnabled(not is_read_only)
+            self.cutAction.setEnabled(not is_read_only)
+            self.pasteAction.setEnabled(not is_read_only)
             
             if file_path:
                 self.setWindowTitle(self.tr("Glyph") + f" - {os.path.basename(file_path)}")
@@ -1129,7 +1157,6 @@ class MarkdownEditor(QMainWindow):
             
             self.update_statistics()
             
-            self._set_editor_actions_enabled(True)
             self.editorTabWidget.setProperty("is_empty", False)
 
         self.editorTabWidget.style().unpolish(self.editorTabWidget)
@@ -1157,7 +1184,7 @@ class MarkdownEditor(QMainWindow):
             print(f"Error in _write_file: Could not write to {file_path}. Error: {e}")
             raise
 
-    def _createEditor(self, file_name: str = "Untitled.md", file_path: str = None) -> QTextEdit:
+    def _createEditor(self, file_name: str = "Untitled.md", file_path: str = None, read_only: bool = False) -> QTextEdit:
 
         md_editor = QTextEdit()
         md_editor.textChanged.connect(self.on_editor_content_changed)
@@ -1174,8 +1201,19 @@ class MarkdownEditor(QMainWindow):
 
         md_editor.setProperty("file_path", file_path)
         md_editor.setProperty("is_changed", False)
+        
+        md_editor.setProperty("is_read_only", read_only)
+
+        if read_only:
+            md_editor.setReadOnly(True)
+            md_editor.setStyleSheet("background-color: #F7F7F7; color: #555555;")
 
         new_tab_index = self.editorTabWidget.addTab(md_editor, file_name)
+        
+        if read_only:
+            self.editorTabWidget.setTabIcon(new_tab_index, self.lockIcon)
+            self.editorTabWidget.setTabToolTip(new_tab_index, self.tr("Read-Only File"))
+        
         self.editorTabWidget.setCurrentIndex(new_tab_index)
         
         return md_editor
@@ -1236,7 +1274,7 @@ class MarkdownEditor(QMainWindow):
             
         return None
 
-    def _open_file_in_new_tab(self, file_path: str):
+    def _open_file_in_new_tab(self, file_path: str, force_readonly: bool = False):
         
         # 1. Check if the file is already open
         for i in range(self.editorTabWidget.count()):
@@ -1256,10 +1294,20 @@ class MarkdownEditor(QMainWindow):
                 self.tr(f"Could not open file '{os.path.basename(file_path)}'.\nError: {str(e)}")
             )
             return
+        
+        is_physically_writable = os.access(file_path, os.W_OK)
+        read_only_mode = (not is_physically_writable) or force_readonly
+        
+        if read_only_mode:
+            status_message = self.tr(f"Opened read-only: {os.path.basename(file_path)}")
+            if force_readonly:
+                status_message += self.tr(" (Forced)")
+                
+            self.statusBar().showMessage(status_message, 3000)
 
         # 3. Create a new editor tab and assign content
         file_name = os.path.basename(file_path)
-        md_editor = self._createEditor(file_name=file_name, file_path=file_path)
+        md_editor = self._createEditor(file_name=file_name, file_path=file_path, read_only=read_only_mode)
         
         md_editor.setPlainText(text) 
         
