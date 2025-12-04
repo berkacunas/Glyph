@@ -109,7 +109,5 @@ Glyph, bağımsız bir geliştirici tarafından geliştirilmekte ve sürdürülm
 
 <a href="https://www.buymeacoffee.com/depones" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
-* **Bu repoya yıldız verin!** ⭐ Görünürlüğe çok yardımcı olur.
-
 ---
 *Glyph, (C) 2025 Berk Acunaş'ın telif hakkına sahiptir ve GNU Genel Kamu Lisansı v3.0 (GPLv3) ile lisanslanmıştır. Lisansın tam metni [LICENSE](LICENSE) dosyasında mevcuttur.*
