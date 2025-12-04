@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/berkacunas/Glyph/compare/v1.2.5...v1.3.0) (2025-12-04)
+
+
+### Features
+
+* **ui:** add 'Open Read-Only' menu action and force_readonly logic ([795e149](https://github.com/berkacunas/Glyph/commit/795e149db870be0cfc96d2f83999eb1cdcc1cd97))
+
 ## [1.2.5](https://github.com/berkacunas/Glyph/compare/v1.2.4...v1.2.5) (2025-12-04)
 
 
