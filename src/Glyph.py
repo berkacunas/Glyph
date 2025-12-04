@@ -449,6 +449,7 @@ class MarkdownEditor(QMainWindow):
     def open_settings_dialog(self):
 
         dialog = SettingsDialog(self)
+
         if dialog.exec() == QDialog.DialogCode.Accepted:
             dialog.saveSettings()
             self.statusBar().showMessage(self.tr("Settings saved."), 3000)

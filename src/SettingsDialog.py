@@ -1,7 +1,7 @@
 import os
 import json
 
-from PySide6.QtCore import QSettings, QCoreApplication, QStandardPaths
+from PySide6.QtCore import QSettings, QCoreApplication, QStandardPaths, Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QDialog, QLabel, QComboBox, QVBoxLayout, QHBoxLayout, QDialogButtonBox, QMessageBox, QFileDialog, QGroupBox, QPushButton, QFontDialog
 
@@ -10,14 +10,17 @@ class SettingsDialog(QDialog):
     def __init__(self, parent=None):
 
         super().__init__(parent)
-
+        
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.setWindowTitle(QCoreApplication.translate("SettingsDialog", "Settings"))
-        self.setFixedSize(300, 200)
+        self.setFixedSize(400, 300)
 
         self.settings = QSettings()
 
         self.setupUi()
         self.loadSettings()
+        
+        
 
     def setupUi(self):
 
