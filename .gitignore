@@ -4,6 +4,8 @@ venv/
 env/
 *.env
 
+.vscode/
+
 # Python compiled files
 __pycache__/
 *.pyc
