@@ -921,6 +921,7 @@ class MarkdownEditor(QMainWindow):
                 <li>QWebEngine (Chromium)</li>
                 <li>python-markdown</li>
                 <li>Pygments</li>
+                <li>Icons by <a href='https://icons8.com'>Icons8</a> & <a href='https://www.flaticon.com'>Flaticon</a></li>
             </ul>
         """
         QMessageBox.about(self, self.tr("About Glyph"), about_text)

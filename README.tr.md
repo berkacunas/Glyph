@@ -99,6 +99,18 @@ Glyph, **GNU General Public License v3.0 (GPL-3.0)** altında lisanslanmış üc
 
 ---
 
+## 🙏 Teşekkürler ve Atıflar
+
+Bu proje aşağıdaki kaynaklardan grafik materyaller kullanmaktadır:
+
+* **İkonlar:**
+    * Bazı ikonlar [Freepik](https://www.freepik.com) tarafından [www.flaticon.com](https://www.flaticon.com/) üzerinden sağlanmıştır.
+    * Bazı ikonlar [Icons8](https://icons8.com) tarafından sağlanmıştır.
+* **Emojiler:**
+    * Emoji grafikleri [Twemoji](https://twemoji.twitter.com/) (CC-BY 4.0) tarafından sağlanmıştır.
+
+---
+
 ## ❤️ Projeyi Destekleyin
 
 Glyph, bağımsız bir geliştirici tarafından geliştirilmekte ve sürdürülmektedir. Eğer bu aracı faydalı bulduysanız ve geliştirmeyi desteklemek (veya sadece hazır derlenmiş `.exe` için teşekkür etmek) isterseniz, lütfen bağış yapmayı düşünün!
