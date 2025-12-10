@@ -75,7 +75,8 @@ class MarkdownEditor(QMainWindow):
         self.current_file_path = None
         self.is_model_set = False
 
-        self.setMinimumSize(1200, 800)
+        self.resize(1000, 800)
+        self.setMinimumSize(400, 300)
         self.setWindowTitle(self.tr("Glyph"))
         
         self.mainWidget = QWidget()
